@@ -316,7 +316,7 @@ export function Learning(){
           positions.forEach((p,i)=>{
             if(i/positions.length > t) return;
             const x = x0 + (x1-x0)*p;
-            drawTree(x,y-4, -Math.PI/2, i * 0.1, t);
+            drawTree(x,y-4, 0, i * 0.1, t);
           });
 
           // 绘制路标
