@@ -1,13 +1,8 @@
 import { themeManager } from '../shared/theme.js';
 
 const navLinks = [
-  { href: '#/', label: '首页' },
-  { href: '#/concepts', label: '概念讲解' },
-  { href: '#/visualizer', label: '可视化演示' },
-  { href: '#/lessons', label: '课程' },
-  { href: '#/practice', label: '练习' },
-  { href: '#/game', label: '小游戏' },
-  { href: '#/progress', label: '进度' },
+  { href: '#/learning', label: '学习' },
+  { href: '#/exercises', label: '练习' },
 ];
 
 export function renderHeader(container){
@@ -34,9 +29,15 @@ export function renderHeader(container){
   container.appendChild(header);
 
   const setActive = () => {
+    const currentHash = window.location.hash || '#/';
     header.querySelectorAll('a').forEach(a => {
-      if (a.getAttribute('data-href') === (window.location.hash || '#/')) a.classList.add('active');
-      else a.classList.remove('active');
+      const href = a.getAttribute('data-href');
+      // 默认路由 '#/' 对应学习页面
+      if ((currentHash === '#/' && href === '#/learning') || href === currentHash) {
+        a.classList.add('active');
+      } else {
+        a.classList.remove('active');
+      }
     });
   };
   setActive();

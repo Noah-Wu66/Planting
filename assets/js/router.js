@@ -1,20 +1,11 @@
-import { Home } from './pages/home.js';
-import { Concepts } from './pages/concepts.js';
-import { Visualizer } from './pages/visualizer.js';
-import { Lessons } from './pages/lessons.js';
-import { Practice } from './pages/practice.js';
-import { Game } from './pages/game.js';
-import { Progress } from './pages/progress.js';
+import { Learning } from './pages/learning.js';
+import { Exercises } from './pages/exercises.js';
 
 const routes = {
-  '': Home,
-  '#/': Home,
-  '#/concepts': Concepts,
-  '#/visualizer': Visualizer,
-  '#/lessons': Lessons,
-  '#/practice': Practice,
-  '#/game': Game,
-  '#/progress': Progress,
+  '': Learning,
+  '#/': Learning,
+  '#/learning': Learning,
+  '#/exercises': Exercises,
 };
 
 function render(Component) {
@@ -33,7 +24,7 @@ export const router = {
   init() {
     const onRoute = () => {
       const hash = window.location.hash || '#/';
-      const Component = routes[hash] || Home;
+      const Component = routes[hash] || Learning;
       render(Component);
     };
     window.addEventListener('hashchange', onRoute);
