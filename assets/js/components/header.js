@@ -15,8 +15,9 @@ export function renderHeader(container){
         <div class="logo" aria-hidden="true"></div>
         <span>🌳 神奇植树王国 🌳</span>
       </div>
-      <div style="display: flex; align-items: center;">
-        <nav class="nav" aria-label="主导航">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button class="menu-toggle" id="menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="切换主菜单">☰</button>
+        <nav class="nav" id="main-nav" aria-label="主导航">
           ${navLinks.map(l => `<a href="${l.href}" data-href="${l.href}">${l.label}</a>`).join('')}
         </nav>
         <button class="theme-toggle" id="theme-toggle" title="${themeManager.getThemeName(currentTheme)}">
@@ -55,5 +56,27 @@ export function renderHeader(container){
     themeManager.toggleTheme();
     updateThemeButton();
   });
+
+  // 移动端菜单切换
+  const menuToggle = header.querySelector('#menu-toggle');
+  const nav = header.querySelector('#main-nav');
+  const navbarInner = header.querySelector('.navbar-inner');
+
+  const closeMenu = () => {
+    navbarInner.classList.remove('is-open');
+    menuToggle.setAttribute('aria-expanded', 'false');
+  };
+
+  // 初始收起
+  closeMenu();
+
+  menuToggle.addEventListener('click', () => {
+    const isOpen = navbarInner.classList.toggle('is-open');
+    menuToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  // 路由变化自动收起
+  window.addEventListener('hashchange', closeMenu);
 }
+
 

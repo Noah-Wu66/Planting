@@ -345,8 +345,9 @@ export function Learning(){
       ctx.translate(x,y);
       ctx.rotate(ang);
 
-      // 计算动画进度（考虑延迟）
-      const animProgress = Math.max(0, Math.min(1, (t - delay) * 2));
+      // 计算动画进度（考虑延迟）；动画结束时统一大小
+      const isFinalFrame = t >= 0.999;
+      const animProgress = isFinalFrame ? 1 : Math.max(0, Math.min(1, (t - delay) * 2));
       if (animProgress <= 0) {
         ctx.restore();
         return;
