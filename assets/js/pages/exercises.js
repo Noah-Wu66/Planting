@@ -91,39 +91,14 @@ export function Exercises(){
       </div>
     </div>
 
-    ${qs.map((q,i)=>`
-      <div class="card" data-id="${q.id}" style="border-left: 4px solid var(--accent-2);">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-          <div style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-            ${i+1}
-          </div>
-          <div style="flex: 1;">
-            <div style="font-size: 16px; line-height: 1.7; color: var(--text);">${q.stem}</div>
-          </div>
-        </div>
+    <div id="q-container"></div>
 
-        <div style="background: rgba(255,255,255,0.5); padding: 16px; border-radius: 12px; margin: 16px 0;">
-          <div class="controls" style="margin: 0;">
-            <div class="input" style="flex: 1; max-width: 200px;">
-              <label>你的答案（棵）</label>
-              <input type="number" min="0" step="1" data-role="ans" placeholder="输入数字">
-            </div>
-            <button class="btn" data-role="tip" style="background: rgba(37,99,235,0.08); border-color: rgba(17,24,39,0.12);">提示</button>
-            <button class="btn primary" data-role="check">提交</button>
-          </div>
-        </div>
-
-        <div class="badge" data-role="msg" style="font-size: 16px; padding: 12px 20px;">
-          输入后点击“提交”。
-        </div>
-      </div>
-    `).join('')}
-
-    <!-- 已移除 30 秒参数挑战模块 -->
+    <!-- 顺序出题：每次只显示一道题，答对后自动进入下一题 -->
   `;
 
   setTimeout(()=>{
     let completedCount = 0;
+    let index = 0; // 当前题目索引
 
     // 更新进度显示
     function updateProgress() {
@@ -139,14 +114,46 @@ export function Exercises(){
       }
     }
 
-    // 练习题功能
-    el.querySelectorAll('.card[data-id]').forEach(card=>{
+    // 渲染当前题目
+    function renderCurrent(){
+      const container = el.querySelector('#q-container');
+      const q = qs[index];
+      if(!q){
+        container.innerHTML = `<div class="badge success" style="font-size:16px; padding:16px 24px;">全部完成！可以刷新获得新题。</div>`;
+        return;
+      }
+      container.innerHTML = `
+        <div class="card" data-id="${q.id}" style="border-left: 4px solid var(--accent-2);">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+              ${index+1}
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 16px; line-height: 1.7; color: var(--text);">${q.stem}</div>
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.5); padding: 16px; border-radius: 12px; margin: 16px 0;">
+            <div class="controls" style="margin: 0;">
+              <div class="input" style="flex: 1; max-width: 200px;">
+                <label>你的答案（棵）</label>
+                <input type="number" min="0" step="1" data-role="ans" placeholder="输入数字">
+              </div>
+              <button class="btn" data-role="tip" style="background: rgba(37,99,235,0.08); border-color: rgba(17,24,39,0.12);">提示</button>
+              <button class="btn primary" data-role="check">提交</button>
+            </div>
+          </div>
+
+          <div class="badge" data-role="msg" style="font-size: 16px; padding: 12px 20px;">
+            输入后点击“提交”。
+          </div>
+        </div>
+      `;
+
+      const card = container.querySelector('.card');
       const msg = card.querySelector('[data-role="msg"]');
-      const getQ = () => qs.find(x=> String(x.id)===card.getAttribute('data-id'));
-      let isCompleted = false;
 
       card.querySelector('[data-role="tip"]').addEventListener('click',()=>{
-        const q = getQ();
         const tipMessages = {
           'both': '💡 小贴士：小路两头都种树时，树的数量比间隔数多1哦！',
           'none': '💡 小贴士：小路两头都不种时，间隔数比树的数量多1呢！',
@@ -160,34 +167,25 @@ export function Exercises(){
 
       card.querySelector('[data-role="check"]').addEventListener('click',()=>{
         const val = parseInt(card.querySelector('[data-role="ans"]').value||'NaN',10);
-        const q = getQ();
         const n = formulas.computeTreeCount({L:q.L,d:q.d,mode:q.mode});
-
         if(val===n){
           msg.innerHTML = `正确：需要 <strong>${n}</strong> 棵树。`;
           msg.className = 'badge success';
           msg.style.background = 'linear-gradient(135deg, rgba(22,163,74,0.15), rgba(59,130,246,0.12))';
-
-          if (!isCompleted) {
-            completedCount++;
-            isCompleted = true;
-            updateProgress();
-
-            // 添加庆祝动画
-            card.style.animation = 'none';
-            setTimeout(() => {
-              card.style.animation = 'pulse 0.6s ease-in-out';
-            }, 10);
-          }
+          completedCount++;
+          updateProgress();
+          // 300ms 后切到下一题
+          setTimeout(()=>{ index++; renderCurrent(); }, 300);
         } else {
           msg.innerHTML = `不正确。参考解：<strong>${n}</strong> 棵。`;
           msg.className = 'badge error';
           msg.style.background = 'linear-gradient(135deg, rgba(220,38,38,0.15), rgba(59,130,246,0.12))';
         }
       });
-    });
+    }
 
-    // 练习题页：小游戏模块已移除
+    // 初始化渲染第一题
+    renderCurrent();
   },0);
 
   return el;

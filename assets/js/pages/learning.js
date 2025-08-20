@@ -86,8 +86,8 @@ export function Learning(){
       <h2>计算与可视化</h2>
       <p>输入参数，快速得到树棵数，并用动画验证排布是否与公式一致。</p>
 
-      <div style="background: linear-gradient(135deg, rgba(255,107,157,0.05), rgba(78,205,196,0.05)); padding: 20px; border-radius: 15px; margin: 16px 0;">
-        <h3 style="color: var(--accent-2); margin-top: 0;">参数设置</h3>
+      <div style="background: rgba(37,99,235,0.06); padding: 20px; border-radius: 12px; margin: 16px 0; border-left: 4px solid var(--accent);">
+        <h3 style="color: var(--accent); margin-top: 0;">参数设置</h3>
         <div class="controls">
           <div class="input" style="flex-basis: 100%;">
             <label>种树方式</label>
@@ -113,12 +113,11 @@ export function Learning(){
         </div>
 
         <div style="text-align: center; margin: 20px 0;">
-          <button class="btn primary" id="calc" style="margin-right: 12px;">计算</button>
-          <button class="btn" id="visualize">可视化</button>
+          <button class="btn primary" id="generate">生成</button>
         </div>
       </div>
 
-      <div id="out" class="badge" style="font-size: 16px; padding: 16px 24px;">设置参数后点击“计算”，查看结果。</div>
+      <div id="out" class="badge" style="font-size: 16px; padding: 16px 24px;">设置参数后点击“生成”，查看结果。</div>
     </div>
     
     <!-- 可视化演示部分 -->
@@ -128,7 +127,7 @@ export function Learning(){
 
       <div style="text-align: center; margin: 16px 0;">
         <div id="vis-result" class="badge" style="font-size: 16px; padding: 16px 24px; display: inline-block;">
-          设置好参数后点击“可视化”，即可看到排布过程。
+          点击“生成”，即可看到排布过程。
         </div>
       </div>
 
@@ -365,9 +364,8 @@ export function Learning(){
       })[mode] || mode;
     }
 
-    // 将两个按钮都绑定为“计算 + 动画”
-    $('#calc').addEventListener('click', runCalcAndDraw);
-    $('#visualize').addEventListener('click', runCalcAndDraw);
+    // “生成”按钮：同时计算并可视化
+    $('#generate').addEventListener('click', runCalcAndDraw);
   }, 0);
 
   return el;

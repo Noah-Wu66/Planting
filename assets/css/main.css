@@ -215,8 +215,9 @@ header,footer{
 .nav a.active,.nav a:hover{
   color:var(--text);
   background:var(--nav-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255,107,157,0.2);
+  /* 移除导航链接的浮动与阴影增强 */
+  transform: none;
+  box-shadow: none;
 }
 
 /* 菜单切换按钮（移动端可见） */
@@ -233,7 +234,7 @@ header,footer{
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.menu-toggle:active{ transform: scale(0.96); }
+.menu-toggle:active{ transform: none; }
 
 /* 主题切换按钮 - 儿童友好设计 */
 .theme-toggle{
@@ -266,8 +267,9 @@ header,footer{
 }
 
 .theme-toggle:hover {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 6px 20px rgba(255,230,109,0.4);
+  /* 移除浮动效果 */
+  transform: none;
+  box-shadow: none;
 }
 
 .theme-toggle:hover::before {
@@ -276,7 +278,7 @@ header,footer{
 }
 
 .theme-toggle:active {
-  transform: scale(0.95);
+  transform: none;
 }
 
 /* 容器和布局 */
@@ -437,8 +439,9 @@ header,footer{
 }
 
 .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  /* 移除浮动与阴影增强效果 */
+  transform: none;
+  box-shadow: none;
 }
 
 .btn:hover::before {
@@ -447,7 +450,7 @@ header,footer{
 }
 
 .btn:active {
-  transform: translateY(0);
+  transform: none;
 }
 
 .btn.primary{
@@ -459,8 +462,9 @@ header,footer{
 }
 
 .btn.primary:hover {
-  box-shadow: 0 8px 25px rgba(255,107,157,0.5);
-  transform: translateY(-3px) scale(1.05);
+  /* 移除浮动与阴影增强效果 */
+  transform: none;
+  box-shadow: none;
 }
 
 /* 暗黑模式下的特殊样式调整 */
