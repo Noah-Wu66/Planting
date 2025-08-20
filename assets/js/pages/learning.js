@@ -270,7 +270,7 @@ export function Learning(){
             if(i/positions.length > t) return;
             const x = cx + R*Math.cos(ang);
             const y = cy + R*Math.sin(ang);
-            drawTree(x,y, ang, i * 0.1); // 添加延迟动画
+            drawTree(x,y, ang, i * 0.1, t); // 添加延迟动画
           });
 
           // 绘制中心装饰
@@ -316,7 +316,7 @@ export function Learning(){
           positions.forEach((p,i)=>{
             if(i/positions.length > t) return;
             const x = x0 + (x1-x0)*p;
-            drawTree(x,y-4, -Math.PI/2, i * 0.1);
+            drawTree(x,y-4, -Math.PI/2, i * 0.1, t);
           });
 
           // 绘制路标
@@ -340,7 +340,7 @@ export function Learning(){
       requestAnimationFrame(loop);
     }
 
-    function drawTree(x,y, ang, delay = 0){
+    function drawTree(x,y, ang, delay = 0, t = 1){
       ctx.save();
       ctx.translate(x,y);
       ctx.rotate(ang);
