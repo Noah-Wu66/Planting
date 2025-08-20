@@ -1,8 +1,8 @@
 import { themeManager } from '../shared/theme.js';
 
 const navLinks = [
-  { href: '#/learning', label: '🎓 学习乐园', emoji: '🌳' },
-  { href: '#/exercises', label: '🎯 挑战闯关', emoji: '🏆' },
+  { href: '#/learning', label: '学习讲解', emoji: '🌲' },
+  { href: '#/exercises', label: '练习与挑战', emoji: '🎯' },
 ];
 
 export function renderHeader(container){
@@ -13,10 +13,10 @@ export function renderHeader(container){
     <div class="navbar-inner">
       <div class="brand">
         <div class="logo" aria-hidden="true"></div>
-        <span>🌳 神奇植树王国 🌳</span>
+        <span>植树问题学习平台</span>
       </div>
       <div style="display: flex; align-items: center; gap: 8px;">
-        <button class="menu-toggle" id="menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="切换主菜单">☰</button>
+        <button class="menu-toggle" id="menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="打开或收起主菜单">☰</button>
         <nav class="nav" id="main-nav" aria-label="主导航">
           ${navLinks.map(l => `<a href="${l.href}" data-href="${l.href}">${l.label}</a>`).join('')}
         </nav>

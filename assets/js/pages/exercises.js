@@ -3,10 +3,10 @@ import { formulas } from '../shared/math.js';
 // 随机生成练习题，保证四种场景覆盖且有整数解
 const modes = ['both','none','one','circle'];
 const modeLabel = {
-  both:'小路两头都种树',
-  none:'小路两头都不种',
-  one:'一头种一头不种',
-  circle:'圆形花园种树'
+  both:'两端都种树',
+  none:'两端都不种',
+  one:'一端种，一端不种',
+  circle:'环形（圆形）种树'
 };
 
 const modeEmojis = {
@@ -34,8 +34,8 @@ function generateQuestion(mode, id){
       const place = storyPlaces[randInt(0, storyPlaces.length-1)];
 
       const stem = mode==='circle'
-        ? `${modeEmojis[mode]} ${character}要在${place}里建一个圆形花园，花园的周长是${L}米。如果按照"${modeLabel[mode]}"的方法，每棵小树之间相距${d}米，那么${character}需要准备多少棵小树苗呢？`
-        : `${modeEmojis[mode]} ${character}要在${place}里修一条${L}米长的小路。如果按照"${modeLabel[mode]}"的方法，每棵小树之间相距${d}米，那么${character}需要准备多少棵小树苗呢？`;
+        ? `${modeEmojis[mode]} 在${place}中有一处圆形路径，周长为 ${L} 米。若每隔 ${d} 米设置一棵树，按“${modeLabel[mode]}”计算，共需多少棵树？`
+        : `${modeEmojis[mode]} 在${place}中有一条长度为 ${L} 米的小路。若每隔 ${d} 米设置一棵树，按“${modeLabel[mode]}”计算，共需多少棵树？`;
 
       const ans = formulas.computeTreeCount({ L, d, mode });
       if(Number.isFinite(ans) && ans>0){
@@ -50,8 +50,8 @@ function generateQuestion(mode, id){
   const ans=formulas.computeTreeCount({L,d,mode});
 
   const stem = mode==='circle'
-    ? `${modeEmojis[mode]} ${character}要在${place}里建一个圆形花园，花园的周长是${L}米。如果按照"${modeLabel[mode]}"的方法，每棵小树之间相距${d}米，那么${character}需要准备多少棵小树苗呢？`
-    : `${modeEmojis[mode]} ${character}要在${place}里修一条${L}米长的小路。如果按照"${modeLabel[mode]}"的方法，每棵小树之间相距${d}米，那么${character}需要准备多少棵小树苗呢？`;
+    ? `${modeEmojis[mode]} 在${place}中有一处圆形路径，周长为 ${L} 米。若每隔 ${d} 米设置一棵树，按“${modeLabel[mode]}”计算，共需多少棵树？`
+    : `${modeEmojis[mode]} 在${place}中有一条长度为 ${L} 米的小路。若每隔 ${d} 米设置一棵树，按“${modeLabel[mode]}”计算，共需多少棵树？`;
 
   return { id, stem, mode, L, d, ans, character, place };
 }
@@ -77,18 +77,17 @@ export function Exercises(){
   el.innerHTML = `
     <!-- 欢迎区域 -->
     <div class="hero">
-      <h1>🎯 植树小挑战</h1>
-      <p>小朋友们，准备好接受植树挑战了吗？帮助小动物们解决种树问题，成为植树小专家！</p>
+      <h1>练习与挑战</h1>
+      <p>完成以下练习，巩固对不同情形公式的理解与应用。</p>
     </div>
 
     <!-- 练习题部分 -->
     <div class="card fun-decoration">
-      <h2>🌟 智慧挑战题</h2>
-      <p>每道题都是一个有趣的小故事！记住我们的小秘诀：<strong>先算间隔，再算树的数量</strong>。完成所有题目，你就是植树小专家啦！</p>
+      <h2>练习题</h2>
+      <p>建议先判断端点条件，再结合 L÷d 的值确定公式。</p>
 
-      <div style="background: linear-gradient(135deg, rgba(255,230,109,0.1), rgba(78,205,196,0.1)); padding: 16px; border-radius: 15px; margin: 16px 0; text-align: center;">
-        <div style="font-size: 24px; margin-bottom: 8px;">🏆</div>
-        <p style="margin: 0; color: var(--accent); font-weight: 600;">挑战进度：<span id="progress">0/6</span> 题完成</p>
+      <div style="background: rgba(37,99,235,0.06); padding: 12px; border-radius: 12px; margin: 16px 0; text-align: center;">
+        <p style="margin: 0; color: var(--accent); font-weight: 600;">完成进度：<span id="progress">0/6</span></p>
       </div>
     </div>
 
@@ -99,70 +98,70 @@ export function Exercises(){
             ${i+1}
           </div>
           <div style="flex: 1;">
-            <div style="font-size: 18px; line-height: 1.5; color: var(--text);">${q.stem}</div>
+            <div style="font-size: 16px; line-height: 1.7; color: var(--text);">${q.stem}</div>
           </div>
         </div>
 
         <div style="background: rgba(255,255,255,0.5); padding: 16px; border-radius: 12px; margin: 16px 0;">
           <div class="controls" style="margin: 0;">
             <div class="input" style="flex: 1; max-width: 200px;">
-              <label>🌳 你的答案（棵小树）</label>
+              <label>你的答案（棵）</label>
               <input type="number" min="0" step="1" data-role="ans" placeholder="输入数字">
             </div>
-            <button class="btn" data-role="tip" style="background: linear-gradient(135deg, var(--accent-3), var(--warn));">💡 小提示</button>
-            <button class="btn primary" data-role="check">🎯 提交答案</button>
+            <button class="btn" data-role="tip" style="background: rgba(37,99,235,0.08); border-color: rgba(17,24,39,0.12);">提示</button>
+            <button class="btn primary" data-role="check">提交</button>
           </div>
         </div>
 
         <div class="badge" data-role="msg" style="font-size: 16px; padding: 12px 20px;">
-          🤔 想好答案了吗？输入数字后点击"提交答案"吧！
+          输入后点击“提交”。
         </div>
       </div>
     `).join('')}
     
     <!-- 小游戏部分 -->
     <div class="card" style="margin-top:20px;">
-      <h2>🎮 超级植树游戏</h2>
-      <p>哇！这是一个超级有趣的游戏！你需要在30秒内调整参数，让小树们能够完美排列。每次成功都能得分哦！</p>
+      <h2>30 秒参数挑战</h2>
+      <p>在 30 秒内多次找到能产生有效排布的参数组合。</p>
 
       <div style="background: linear-gradient(135deg, rgba(255,107,157,0.1), rgba(78,205,196,0.1)); padding: 20px; border-radius: 15px; margin: 16px 0;">
-        <h3 style="color: var(--accent); margin-top: 0;">🎯 游戏控制台</h3>
+        <h3 style="color: var(--accent); margin-top: 0;">控制台</h3>
         <div class="controls">
           <div class="input">
-            <label>📏 路的长度</label>
+            <label>路的长度</label>
             <input id="L" type="range" min="40" max="200" value="100">
             <div style="text-align: center; color: var(--muted); font-size: 14px; margin-top: 4px;">
               <span id="L-value">100</span> 米
             </div>
           </div>
           <div class="input">
-            <label>🌳 树的间距</label>
+            <label>树的间距</label>
             <input id="d" type="range" min="4" max="40" value="10">
             <div style="text-align: center; color: var(--muted); font-size: 14px; margin-top: 4px;">
               <span id="d-value">10</span> 米
             </div>
           </div>
           <div class="input">
-            <label>🎨 种树方式</label>
+            <label>种树方式</label>
             <select id="mode">
-              <option value="both">🌳 小路两头都种</option>
-              <option value="none">🌿 小路两头都不种</option>
-              <option value="one">🌲 一头种一头不种</option>
-              <option value="circle">🎡 圆形花园种树</option>
+              <option value="both">两端都种树</option>
+              <option value="none">两端都不种</option>
+              <option value="one">一端种，一端不种</option>
+              <option value="circle">环形（圆形）</option>
             </select>
           </div>
         </div>
 
         <div style="text-align: center; margin: 20px 0;">
           <button class="btn primary" id="start" style="font-size: 18px; padding: 16px 32px;">
-            🚀 开始超级挑战
+            开始
           </button>
         </div>
       </div>
 
       <div style="text-align: center; margin: 16px 0;">
         <div class="badge" id="status" style="font-size: 18px; padding: 16px 24px;">
-          🎮 准备好了吗？点击"开始超级挑战"开始游戏！
+          点击“开始”，挑战 30 秒内尽可能多地得到有效排布
         </div>
       </div>
 
@@ -190,7 +189,7 @@ export function Exercises(){
         if (completedCount === 6) {
           progressEl.parentElement.innerHTML = `
             <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
-            <p style="margin: 0; color: var(--success); font-weight: 600;">恭喜你！全部完成，你是植树小专家！</p>
+            <p style="margin: 0; color: var(--success); font-weight: 600;">已全部完成，继续巩固可进入挑战模式。</p>
           `;
         }
       }
@@ -221,9 +220,9 @@ export function Exercises(){
         const n = formulas.computeTreeCount({L:q.L,d:q.d,mode:q.mode});
 
         if(val===n){
-          msg.innerHTML = `🎉 太棒了！${q.character}需要准备 <strong>${n}</strong> 棵小树苗！你答对了！`;
+          msg.innerHTML = `正确：需要 <strong>${n}</strong> 棵树。`;
           msg.className = 'badge success';
-          msg.style.background = 'linear-gradient(135deg, rgba(104,211,145,0.2), rgba(52,211,153,0.2))';
+          msg.style.background = 'linear-gradient(135deg, rgba(22,163,74,0.15), rgba(59,130,246,0.12))';
 
           if (!isCompleted) {
             completedCount++;
@@ -237,9 +236,9 @@ export function Exercises(){
             }, 10);
           }
         } else {
-          msg.innerHTML = `🤔 再想想哦！${q.character}实际需要 <strong>${n}</strong> 棵小树苗。你可以重新计算一下！`;
+          msg.innerHTML = `不正确。参考解：<strong>${n}</strong> 棵。`;
           msg.className = 'badge error';
-          msg.style.background = 'linear-gradient(135deg, rgba(255,107,107,0.2), rgba(255,59,48,0.2))';
+          msg.style.background = 'linear-gradient(135deg, rgba(220,38,38,0.15), rgba(59,130,246,0.12))';
         }
       });
     });
@@ -262,7 +261,7 @@ export function Exercises(){
     });
 
     function updateStatus(txt){
-      $('#status').innerHTML = `🏆 得分: <strong>${score}</strong> · ⏰ 倒计时: <strong>${timeLeft}</strong>秒 · ${txt}`;
+      $('#status').innerHTML = `得分: <strong>${score}</strong> · 倒计时: <strong>${timeLeft}</strong> 秒 · ${txt}`;
     }
 
     function drawOK(){
@@ -277,28 +276,28 @@ export function Exercises(){
       ctx.fillRect(0, 0, w, h);
 
       // 绘制成功信息
-      ctx.fillStyle='#32CD32';
-      ctx.font='bold 28px Comic Sans MS, system-ui';
+      ctx.fillStyle='#16A34A';
+      ctx.font='bold 24px system-ui';
       ctx.textAlign = 'center';
-      ctx.fillText('🎉 太棒了！+1 分', w/2, h/2 - 10);
+      ctx.fillText('+1 分', w/2, h/2 - 6);
 
-      ctx.fillStyle='#228B22';
-      ctx.font='18px Comic Sans MS, system-ui';
-      ctx.fillText('小树们排列得很整齐！', w/2, h/2 + 20);
+      ctx.fillStyle='#059669';
+      ctx.font='16px system-ui';
+      ctx.fillText('成功生成有效排布', w/2, h/2 + 18);
     }
 
     function drawFail(){
       const w=cv.width,h=cv.height;
       ctx.clearRect(0,0,w,h);
 
-      ctx.fillStyle='#FFB347';
-      ctx.font='bold 24px Comic Sans MS, system-ui';
+      ctx.fillStyle='#D97706';
+      ctx.font='bold 22px system-ui';
       ctx.textAlign = 'center';
-      ctx.fillText('🤔 再试试看！', w/2, h/2 - 10);
+      ctx.fillText('再试一次', w/2, h/2 - 8);
 
-      ctx.fillStyle='#FF8C00';
-      ctx.font='16px Comic Sans MS, system-ui';
-      ctx.fillText('调整一下参数，让小树们排整齐', w/2, h/2 + 15);
+      ctx.fillStyle='#92400E';
+      ctx.font='14px system-ui';
+      ctx.fillText('调整参数，寻找可行解', w/2, h/2 + 16);
     }
 
     function tick(){
@@ -308,15 +307,15 @@ export function Exercises(){
       if(timeLeft<=0){
         running=false;
         clearInterval(timer);
-        $('#status').innerHTML = `🎊 游戏结束！你的最终得分是 <strong style="color: var(--accent); font-size: 20px;">${score}</strong> 分！${score >= 5 ? '你是植树小天才！' : '继续加油哦！'}`;
+        $('#status').innerHTML = `结束！最终得分 <strong style="color: var(--accent); font-size: 20px;">${score}</strong> 分。`;
 
         // 绘制结束画面
         const w=cv.width,h=cv.height;
         ctx.clearRect(0,0,w,h);
-        ctx.fillStyle = score >= 5 ? '#FFD700' : '#87CEEB';
-        ctx.font='bold 32px Comic Sans MS, system-ui';
+        ctx.fillStyle = '#2563EB';
+        ctx.font='bold 28px system-ui';
         ctx.textAlign = 'center';
-        ctx.fillText(score >= 5 ? '🏆 植树小天才！' : '🌱 继续加油！', w/2, h/2);
+        ctx.fillText('挑战结束', w/2, h/2);
       }
     }
 
@@ -355,13 +354,13 @@ export function Exercises(){
       // 清空画布，显示开始信息
       const w=cv.width,h=cv.height;
       ctx.clearRect(0,0,w,h);
-      ctx.fillStyle='#FF6B9D';
-      ctx.font='bold 24px Comic Sans MS, system-ui';
+      ctx.fillStyle='#2563EB';
+      ctx.font='bold 22px system-ui';
       ctx.textAlign = 'center';
-      ctx.fillText('🚀 游戏开始！', w/2, h/2 - 10);
-      ctx.fillStyle='#4ECDC4';
-      ctx.font='16px Comic Sans MS, system-ui';
-      ctx.fillText('调整滑块让小树们排整齐！', w/2, h/2 + 15);
+      ctx.fillText('开始', w/2, h/2 - 8);
+      ctx.fillStyle='#059669';
+      ctx.font='14px system-ui';
+      ctx.fillText('调整滑块，寻找可行解', w/2, h/2 + 14);
     });
 
     // 当滑块停止 500ms 后自动判定一次

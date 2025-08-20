@@ -1,82 +1,82 @@
 /* 基础样式与响应式布局 - 儿童友好化设计 */
 /* 浅色主题（默认，儿童友好风格） */
 :root{
-  /* 儿童友好的明亮色彩方案 */
-  --bg: linear-gradient(135deg, #FFE5F1 0%, #E8F4FD 100%);
+  /* 面向五年级的清爽学习配色 */
+  --bg: linear-gradient(135deg, #F3F4F6 0%, #EFF6FF 100%);
   --card: #FFFFFF;
   --muted: #6B7280;
-  --accent: #FF6B9D; /* 粉色主色调 */
-  --accent-2: #4ECDC4; /* 青绿色辅助色 */
-  --accent-3: #FFE66D; /* 黄色强调色 */
-  --danger: #FF6B6B;
-  --warn: #FFB347;
-  --text: #2D3748;
-  --success: #68D391;
+  --accent: #2563EB; /* 蓝色主色调 */
+  --accent-2: #059669; /* 绿色辅助色 */
+  --accent-3: #F59E0B; /* 橙色强调 */
+  --danger: #DC2626;
+  --warn: #D97706;
+  --text: #111827;
+  --success: #16A34A;
 
   /* 导航栏样式 */
-  --navbar-bg: rgba(255,255,255,0.95);
-  --navbar-border: rgba(255,107,157,0.2);
+  --navbar-bg: rgba(255,255,255,0.92);
+  --navbar-border: rgba(37,99,235,0.18);
 
   /* 卡片样式 */
   --card-bg: linear-gradient(145deg, #FFFFFF 0%, #F8FAFC 100%);
-  --card-border: rgba(255,107,157,0.15);
-  --card-shadow: 0 10px 25px rgba(255,107,157,0.1), 0 4px 10px rgba(0,0,0,0.05);
+  --card-border: rgba(37,99,235,0.12);
+  --card-shadow: 0 10px 25px rgba(17,24,39,0.06), 0 4px 10px rgba(0,0,0,0.05);
 
   /* 输入框样式 */
   --input-bg: #FFFFFF;
-  --input-border: rgba(255,107,157,0.2);
+  --input-border: rgba(17,24,39,0.12);
   --input-focus: var(--accent);
 
   /* 交互样式 */
-  --nav-hover: rgba(255,107,157,0.1);
-  --badge-bg: linear-gradient(135deg, #FFE5F1, #E8F4FD);
+  --nav-hover: rgba(37,99,235,0.08);
+  --badge-bg: linear-gradient(135deg, #F3F4F6, #EFF6FF);
 
   /* 画布样式 */
-  --canvas-bg: linear-gradient(135deg, #F0F9FF 0%, #FFF7ED 50%, #F0FDF4 100%);
-  --canvas-border: rgba(78,205,196,0.3);
+  --canvas-bg: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F0FDF4 100%);
+  --canvas-border: rgba(37,99,235,0.22);
 
   /* 背景 */
-  --body-bg: linear-gradient(135deg, #FFE5F1 0%, #E8F4FD 100%);
+  --body-bg: var(--bg);
 }
 
 /* 暗黑主题（儿童友好的夜间模式） */
 [data-theme="dark"]{
-  /* 温和的暗色调，保护儿童视力 */
-  --bg: linear-gradient(135deg, #2D1B69 0%, #11998E 100%);
-  --card: #1F2937;
+  /* 温和的暗色调 */
+  --bg: linear-gradient(135deg, #0F172A 0%, #1F2937 100%);
+  --card: #111827;
   --muted: #9CA3AF;
-  --accent: #F472B6; /* 亮粉色 */
-  --accent-2: #34D399; /* 翠绿色 */
-  --accent-3: #FBBF24; /* 金黄色 */
+  --accent: #60A5FA; /* 浅蓝强调 */
+  --accent-2: #34D399;
+  --accent-3: #FBBF24;
   --danger: #F87171;
-  --warn: #FBBF24;
+  --warn: #F59E0B;
   --text: #F9FAFB;
-  --success: #6EE7B7;
+  --success: #86EFAC;
 
   /* 导航栏样式 */
-  --navbar-bg: rgba(31,41,55,0.95);
-  --navbar-border: rgba(244,114,182,0.3);
+  --navbar-bg: rgba(17,24,39,0.9);
+  --navbar-border: rgba(96,165,250,0.28);
 
   /* 卡片样式 */
-  --card-bg: linear-gradient(145deg, #1F2937 0%, #374151 100%);
-  --card-border: rgba(244,114,182,0.2);
-  --card-shadow: 0 10px 25px rgba(244,114,182,0.15), 0 4px 10px rgba(0,0,0,0.3);
+  --card-bg: linear-gradient(145deg, #111827 0%, #1F2937 100%);
+  --card-border: rgba(96,165,250,0.24);
+  --card-shadow: 0 10px 25px rgba(0,0,0,0.35), 0 4px 10px rgba(0,0,0,0.3);
 
   /* 输入框样式 */
-  --input-bg: #374151;
-  --input-border: rgba(244,114,182,0.3);
+  --input-bg: #1F2937;
+  --input-border: rgba(96,165,250,0.28);
   --input-focus: var(--accent);
 
   /* 交互样式 */
-  --nav-hover: rgba(244,114,182,0.15);
-  --badge-bg: linear-gradient(135deg, rgba(45,27,105,0.8), rgba(17,153,142,0.8));
+  --nav-hover: rgba(96,165,250,0.18);
+  --badge-bg: linear-gradient(135deg, rgba(17,24,39,0.85), rgba(31,41,55,0.85));
 
   /* 画布样式 */
-  --canvas-bg: linear-gradient(135deg, #1E293B 0%, #0F172A 50%, #1F2937 100%);
-  --canvas-border: rgba(52,211,153,0.4);
+  --canvas-bg: linear-gradient(135deg, #111827 0%, #0F172A 50%, #1F2937 100%);
+  --canvas-border: rgba(96,165,250,0.3);
 
   /* 背景 */
-  --body-bg: linear-gradient(135deg, #2D1B69 0%, #11998E 100%);
+  --body-bg: var(--bg);
 }
 /* 基础样式重置和儿童友好字体 */
 *{
@@ -89,13 +89,13 @@ html,body{
 
 body{
   margin:0;
-  /* 儿童友好的字体设置 */
-  font-family: "Comic Sans MS", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+  /* 面向五年级的清晰易读字体 */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   background: var(--body-bg);
   color: var(--text);
-  letter-spacing: 0.3px;
-  line-height: 1.6;
-  /* 增大基础字体大小，便于儿童阅读 */
+  letter-spacing: 0.2px;
+  line-height: 1.65;
+  /* 基础字号 */
   font-size: 16px;
   /* 添加平滑滚动 */
   scroll-behavior: smooth;
@@ -118,17 +118,9 @@ header,footer{
   position: relative;
 }
 
-#app-footer::before {
-  content: "🌱";
-  margin-right: 8px;
-  font-size: 18px;
-}
-
-#app-footer::after {
-  content: "🌳";
-  margin-left: 8px;
-  font-size: 18px;
-}
+/* 移除页脚装饰图标，风格更克制 */
+#app-footer::before,
+#app-footer::after { content: ""; display: none; }
 
 /* 导航栏样式 - 儿童友好设计 */
 .navbar{
@@ -626,24 +618,9 @@ header,footer{
   .card{ padding: 16px; }
 }
 
-/* 添加一些有趣的装饰性元素 */
-.fun-decoration {
-  position: relative;
-}
-
-.fun-decoration::before {
-  content: "🌟";
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  font-size: 20px;
-  animation: twinkle 2s infinite;
-}
-
-@keyframes twinkle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
-}
+/* 精简装饰元素，聚焦内容 */
+.fun-decoration::before { content: ""; display: none; }
+@keyframes twinkle { from {opacity:1} to {opacity:1} }
 
 /* 成功状态样式 */
 .success {
