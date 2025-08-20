@@ -1,93 +1,629 @@
-/* 基础样式与响应式布局 */
-/* 浅色主题（默认，iOS风格） */
+/* 基础样式与响应式布局 - 儿童友好化设计 */
+/* 浅色主题（默认，儿童友好风格） */
 :root{
-  --bg:#F2F2F7; --card:#FFFFFF; --muted:#8E8E93; --accent:#007AFF; --accent-2:#34C759; --danger:#FF3B30; --warn:#FFCC00; --text:#1C1C1E;
-  --navbar-bg: rgba(255,255,255,0.8);
-  --navbar-border: #C6C6C8;
-  --card-bg: linear-gradient(180deg,#FFFFFF,#FAFAFA);
-  --card-border: #E5E5EA;
-  --card-shadow: rgba(0,0,0,0.06);
+  /* 儿童友好的明亮色彩方案 */
+  --bg: linear-gradient(135deg, #FFE5F1 0%, #E8F4FD 100%);
+  --card: #FFFFFF;
+  --muted: #6B7280;
+  --accent: #FF6B9D; /* 粉色主色调 */
+  --accent-2: #4ECDC4; /* 青绿色辅助色 */
+  --accent-3: #FFE66D; /* 黄色强调色 */
+  --danger: #FF6B6B;
+  --warn: #FFB347;
+  --text: #2D3748;
+  --success: #68D391;
+
+  /* 导航栏样式 */
+  --navbar-bg: rgba(255,255,255,0.95);
+  --navbar-border: rgba(255,107,157,0.2);
+
+  /* 卡片样式 */
+  --card-bg: linear-gradient(145deg, #FFFFFF 0%, #F8FAFC 100%);
+  --card-border: rgba(255,107,157,0.15);
+  --card-shadow: 0 10px 25px rgba(255,107,157,0.1), 0 4px 10px rgba(0,0,0,0.05);
+
+  /* 输入框样式 */
   --input-bg: #FFFFFF;
-  --input-border: #E5E5EA;
-  --nav-hover: #E5E5EA;
-  --badge-bg: #F2F2F7;
-  --canvas-bg: linear-gradient(180deg,#FFFFFF,#F8F9FA);
-  --canvas-border: #E5E5EA;
-  --body-bg: #F2F2F7;
+  --input-border: rgba(255,107,157,0.2);
+  --input-focus: var(--accent);
+
+  /* 交互样式 */
+  --nav-hover: rgba(255,107,157,0.1);
+  --badge-bg: linear-gradient(135deg, #FFE5F1, #E8F4FD);
+
+  /* 画布样式 */
+  --canvas-bg: linear-gradient(135deg, #F0F9FF 0%, #FFF7ED 50%, #F0FDF4 100%);
+  --canvas-border: rgba(78,205,196,0.3);
+
+  /* 背景 */
+  --body-bg: linear-gradient(135deg, #FFE5F1 0%, #E8F4FD 100%);
 }
 
-/* 暗黑主题（iOS风格） */
+/* 暗黑主题（儿童友好的夜间模式） */
 [data-theme="dark"]{
-  --bg:#000000; --card:#1C1C1E; --muted:#8E8E93; --accent:#0A84FF; --accent-2:#30D158; --danger:#FF453A; --warn:#FFD60A; --text:#F2F2F7;
-  --navbar-bg: rgba(28,28,30,0.85);
-  --navbar-border: #3A3A3C;
-  --card-bg: linear-gradient(180deg,#1C1C1E,#2C2C2E);
-  --card-border: #3A3A3C;
-  --card-shadow: rgba(0,0,0,0.40);
-  --input-bg: #1C1C1E;
-  --input-border: #3A3A3C;
-  --nav-hover: #2C2C2E;
-  --badge-bg: #2C2C2E;
-  --canvas-bg: radial-gradient(1200px 200px at 50% 110%,rgba(10,132,255,.08),transparent 60%), linear-gradient(180deg,#000000,#0C0C0D);
-  --canvas-border: #3A3A3C;
-  --body-bg: #000000;
+  /* 温和的暗色调，保护儿童视力 */
+  --bg: linear-gradient(135deg, #2D1B69 0%, #11998E 100%);
+  --card: #1F2937;
+  --muted: #9CA3AF;
+  --accent: #F472B6; /* 亮粉色 */
+  --accent-2: #34D399; /* 翠绿色 */
+  --accent-3: #FBBF24; /* 金黄色 */
+  --danger: #F87171;
+  --warn: #FBBF24;
+  --text: #F9FAFB;
+  --success: #6EE7B7;
+
+  /* 导航栏样式 */
+  --navbar-bg: rgba(31,41,55,0.95);
+  --navbar-border: rgba(244,114,182,0.3);
+
+  /* 卡片样式 */
+  --card-bg: linear-gradient(145deg, #1F2937 0%, #374151 100%);
+  --card-border: rgba(244,114,182,0.2);
+  --card-shadow: 0 10px 25px rgba(244,114,182,0.15), 0 4px 10px rgba(0,0,0,0.3);
+
+  /* 输入框样式 */
+  --input-bg: #374151;
+  --input-border: rgba(244,114,182,0.3);
+  --input-focus: var(--accent);
+
+  /* 交互样式 */
+  --nav-hover: rgba(244,114,182,0.15);
+  --badge-bg: linear-gradient(135deg, rgba(45,27,105,0.8), rgba(17,153,142,0.8));
+
+  /* 画布样式 */
+  --canvas-bg: linear-gradient(135deg, #1E293B 0%, #0F172A 50%, #1F2937 100%);
+  --canvas-border: rgba(52,211,153,0.4);
+
+  /* 背景 */
+  --body-bg: linear-gradient(135deg, #2D1B69 0%, #11998E 100%);
 }
-*{box-sizing:border-box}
-html,body{height:100%;}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,Roboto,Helvetica,Arial,"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif;background:var(--body-bg);color:var(--text); letter-spacing:0.2px;}
+/* 基础样式重置和儿童友好字体 */
+*{
+  box-sizing:border-box;
+}
 
-header,footer{padding:12px 16px;background:transparent;}
-#app-footer{display:flex;justify-content:center;align-items:center;height:48px;color:var(--muted)}
+html,body{
+  height:100%;
+}
 
-.navbar{position:sticky;top:0;z-index:10;background:var(--navbar-bg);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--navbar-border)}
-.navbar-inner{display:flex;gap:8px;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto;padding:8px 12px}
-.brand{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--text)}
-.brand .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 1px 2px rgba(0,0,0,.06), 0 0 0 2px var(--bg)}
-.nav{display:flex;flex-wrap:wrap;gap:6px}
-.nav a{color:var(--muted);text-decoration:none;padding:8px 10px;border-radius:8px}
-.nav a.active,.nav a:hover{color:var(--text);background:var(--nav-hover)}
+body{
+  margin:0;
+  /* 儿童友好的字体设置 */
+  font-family: "Comic Sans MS", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+  background: var(--body-bg);
+  color: var(--text);
+  letter-spacing: 0.3px;
+  line-height: 1.6;
+  /* 增大基础字体大小，便于儿童阅读 */
+  font-size: 16px;
+  /* 添加平滑滚动 */
+  scroll-behavior: smooth;
+}
 
-/* 主题切换按钮 */
-.theme-toggle{
-  background:none;
-  border:1px solid var(--input-border);
+/* 头部和底部样式 */
+header,footer{
+  padding:16px 20px;
+  background:transparent;
+}
+
+#app-footer{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:60px;
+  color:var(--muted);
+  font-size:14px;
+  /* 添加可爱的装饰 */
+  position: relative;
+}
+
+#app-footer::before {
+  content: "🌱";
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+#app-footer::after {
+  content: "🌳";
+  margin-left: 8px;
+  font-size: 18px;
+}
+
+/* 导航栏样式 - 儿童友好设计 */
+.navbar{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:var(--navbar-bg);
+  backdrop-filter:saturate(180%) blur(15px);
+  border-bottom:2px solid var(--navbar-border);
+  /* 添加阴影增强层次感 */
+  box-shadow: 0 4px 20px rgba(255,107,157,0.1);
+}
+
+.navbar-inner{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+  max-width:1200px;
+  margin:0 auto;
+  padding:12px 16px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-weight:700;
   color:var(--text);
-  padding:8px 10px;
-  border-radius:8px;
-  cursor:pointer;
+  font-size:18px;
+  /* 添加动画效果 */
+  transition: transform 0.2s ease;
+}
+
+.brand:hover {
+  transform: scale(1.05);
+}
+
+.brand .logo{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  box-shadow:0 4px 12px rgba(255,107,157,0.3), 0 0 0 3px rgba(255,255,255,0.8);
+  /* 添加脉冲动画 */
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.nav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.nav a{
+  color:var(--muted);
+  text-decoration:none;
+  padding:10px 16px;
+  border-radius:12px;
+  font-weight:600;
   font-size:16px;
-  margin-left:8px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
-.theme-toggle:hover{
+
+.nav a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transition: left 0.5s;
+}
+
+.nav a:hover::before {
+  left: 100%;
+}
+
+.nav a.active,.nav a:hover{
+  color:var(--text);
   background:var(--nav-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255,107,157,0.2);
 }
 
-.container{max-width:1200px;margin:0 auto;padding:16px}
-.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
-.card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;box-shadow:0 8px 24px var(--card-shadow);padding:16px}
-.card h2{margin:0 0 8px 0;font-size:20px}
-.card p{color:var(--muted);line-height:1.6}
+/* 主题切换按钮 - 儿童友好设计 */
+.theme-toggle{
+  background: linear-gradient(135deg, var(--accent-3), var(--accent-2));
+  border: 2px solid rgba(255,255,255,0.3);
+  color: #FFFFFF;
+  padding: 10px 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 18px;
+  margin-left: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255,230,109,0.3);
+  position: relative;
+  overflow: hidden;
+}
 
-.controls{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
-.input{display:flex;flex-direction:column;gap:6px;min-width:140px}
-.input input,.input select,.input button{padding:12px 14px;border-radius:10px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.04) inset}
-.input input[type=range]{accent-color:var(--accent)}
-.btn{cursor:pointer; border-radius:12px; padding:12px 16px; border:1px solid var(--input-border); background:var(--card-bg); color:var(--text); box-shadow:0 1px 2px rgba(0,0,0,.06);}
-.btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent)); border:0; color:#fff; box-shadow:0 6px 12px rgba(0,122,255,.25);}
+.theme-toggle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  transform: translate(-50%, -50%);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 20px rgba(255,230,109,0.4);
+}
+
+.theme-toggle:hover::before {
+  width: 100px;
+  height: 100px;
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+/* 容器和布局 */
+.container{
+  max-width:1200px;
+  margin:0 auto;
+  padding:20px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:16px;
+}
+
+/* 卡片样式 - 儿童友好设计 */
+.card{
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 20px;
+  box-shadow: var(--card-shadow);
+  padding: 24px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+  transform: rotate(45deg);
+  transition: all 0.6s ease;
+  opacity: 0;
+}
+
+.card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(255,107,157,0.15), 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.card:hover::before {
+  opacity: 1;
+  animation: shimmer 1.5s ease-in-out;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.card h2{
+  margin: 0 0 16px 0;
+  font-size: 24px;
+  color: var(--accent);
+  font-weight: 700;
+  position: relative;
+}
+
+.card h2::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 2px;
+}
+
+.card h3{
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
+.card p{
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+/* 控件和输入框样式 - 儿童友好设计 */
+.controls{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 20px 0;
+  align-items: end;
+}
+
+.input{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
+}
+
+.input label {
+  font-weight: 600;
+  color: var(--accent);
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.input input, .input select, .input button{
+  padding: 14px 16px;
+  border-radius: 15px;
+  border: 2px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05) inset;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.input input:focus, .input select:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(255,107,157,0.2), 0 2px 8px rgba(0,0,0,0.05) inset;
+  transform: scale(1.02);
+}
+
+.input input[type=range]{
+  accent-color: var(--accent);
+  height: 8px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 10px;
+}
+
+/* 按钮样式 - 儿童友好设计 */
+.btn{
+  cursor: pointer;
+  border-radius: 15px;
+  padding: 14px 20px;
+  border: 2px solid var(--input-border);
+  background: var(--card-bg);
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  transform: translate(-50%, -50%);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn.primary{
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border: 0;
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(255,107,157,0.4);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.btn.primary:hover {
+  box-shadow: 0 8px 25px rgba(255,107,157,0.5);
+  transform: translateY(-3px) scale(1.05);
+}
 
 /* 暗黑模式下的特殊样式调整 */
-[data-theme="dark"] .btn.primary{ box-shadow:0 6px 12px rgba(10,132,255,.35);}
-.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;background:var(--badge-bg);color:var(--muted);border:1px solid var(--input-border)}
+[data-theme="dark"] .btn.primary{
+  box-shadow: 0 6px 20px rgba(244,114,182,0.4);
+}
 
-.hero{display:grid;place-items:center;padding:40px 0}
-.hero h1{font-size:28px;margin:8px 0}
-.hero p{color:var(--muted);margin:0}
+/* 徽章样式 - 儿童友好设计 */
+.badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  background: var(--badge-bg);
+  color: var(--text);
+  border: 2px solid var(--input-border);
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(255,107,157,0.1);
+  transition: all 0.3s ease;
+}
 
-.canvas-wrap{position:relative;width:100%;height:280px;border-radius:12px;overflow:hidden;border:1px dashed var(--canvas-border)}
-.canvas{width:100%;height:100%;display:block;background:var(--canvas-bg)}
+.badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(255,107,157,0.2);
+}
 
+/* 英雄区域样式 */
+.hero{
+  display: grid;
+  place-items: center;
+  padding: 60px 0;
+  text-align: center;
+}
+
+.hero h1{
+  font-size: 36px;
+  margin: 12px 0;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+}
+
+.hero p{
+  color: var(--muted);
+  margin: 0;
+  font-size: 18px;
+  max-width: 600px;
+}
+
+/* 画布容器样式 - 儿童友好设计 */
+.canvas-wrap{
+  position: relative;
+  width: 100%;
+  height: 320px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 3px dashed var(--canvas-border);
+  background: var(--canvas-bg);
+  box-shadow: 0 8px 25px rgba(78,205,196,0.1) inset;
+  transition: all 0.3s ease;
+}
+
+.canvas-wrap:hover {
+  border-color: var(--accent-2);
+  box-shadow: 0 8px 25px rgba(78,205,196,0.2) inset, 0 4px 20px rgba(78,205,196,0.1);
+}
+
+.canvas{
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: var(--canvas-bg);
+  border-radius: 17px;
+}
+
+/* 响应式设计 - 儿童友好适配 */
 @media (min-width: 768px){
-  .hero h1{font-size:36px}
-  .canvas-wrap{height:360px}
+  .hero h1{
+    font-size: 48px;
+  }
+
+  .canvas-wrap{
+    height: 400px;
+  }
+
+  .container {
+    padding: 24px;
+  }
+
+  .card {
+    padding: 32px;
+  }
+
+  .controls {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 767px) {
+  .navbar-inner {
+    padding: 8px 12px;
+  }
+
+  .brand {
+    font-size: 16px;
+  }
+
+  .brand .logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .nav a {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .card h2 {
+    font-size: 20px;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .input {
+    min-width: auto;
+  }
+}
+
+/* 添加一些有趣的装饰性元素 */
+.fun-decoration {
+  position: relative;
+}
+
+.fun-decoration::before {
+  content: "🌟";
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 20px;
+  animation: twinkle 2s infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* 成功状态样式 */
+.success {
+  color: var(--success) !important;
+  font-weight: 600;
+}
+
+.success::before {
+  content: "🎉 ";
+}
+
+/* 错误状态样式 */
+.error {
+  color: var(--danger) !important;
+  font-weight: 600;
+}
+
+.error::before {
+  content: "🤔 ";
 }
 

@@ -1,8 +1,8 @@
 import { themeManager } from '../shared/theme.js';
 
 const navLinks = [
-  { href: '#/learning', label: '学习' },
-  { href: '#/exercises', label: '练习' },
+  { href: '#/learning', label: '🎓 学习乐园', emoji: '🌳' },
+  { href: '#/exercises', label: '🎯 挑战闯关', emoji: '🏆' },
 ];
 
 export function renderHeader(container){
@@ -13,7 +13,7 @@ export function renderHeader(container){
     <div class="navbar-inner">
       <div class="brand">
         <div class="logo" aria-hidden="true"></div>
-        <span>植树问题智能课堂</span>
+        <span>🌳 神奇植树王国 🌳</span>
       </div>
       <div style="display: flex; align-items: center;">
         <nav class="nav" aria-label="主导航">
