@@ -303,15 +303,7 @@ header,footer{
   opacity: 0;
 }
 
-.card:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 15px 35px rgba(255,107,157,0.15), 0 8px 15px rgba(0,0,0,0.1);
-}
-
-.card:hover::before {
-  opacity: 1;
-  animation: shimmer 1.5s ease-in-out;
-}
+/* 移除卡片悬浮效果 */
 
 @keyframes shimmer {
   0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
@@ -476,10 +468,7 @@ header,footer{
   transition: all 0.3s ease;
 }
 
-.badge:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(255,107,157,0.2);
-}
+/* 移除徽章悬浮效果 */
 
 /* 英雄区域样式 */
 .hero{
@@ -519,10 +508,7 @@ header,footer{
   transition: all 0.3s ease;
 }
 
-.canvas-wrap:hover {
-  border-color: var(--accent-2);
-  box-shadow: 0 8px 25px rgba(78,205,196,0.2) inset, 0 4px 20px rgba(78,205,196,0.1);
-}
+/* 移除画布容器悬浮效果 */
 
 .canvas{
   width: 100%;
