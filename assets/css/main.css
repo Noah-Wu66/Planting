@@ -515,6 +515,24 @@ header,footer{
   max-width: 600px;
 }
 
+
+/* 移动端首页/练习快速入口（仅移动端显示） */
+.mobile-cta{ display: none; }
+
+@media (max-width: 767px){
+  .mobile-cta{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    max-width: 520px;
+    margin: 4px auto 12px;
+  }
+  /* 缩小移动端 hero 的上内边距，使按钮更靠近顶栏 */
+  .hero{ padding: 20px 0 40px; }
+  .mobile-cta .btn{ width: 100%; }
+}
+
 /* 画布容器样式 - 儿童友好设计 */
 .canvas-wrap{
   position: relative;

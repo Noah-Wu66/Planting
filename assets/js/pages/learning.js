@@ -41,6 +41,10 @@ export function Learning(){
   el.innerHTML = `
     <!-- 欢迎区域 -->
     <div class="hero">
+      <div class="mobile-cta" role="navigation" aria-label="快速入口（移动端）">
+        <a class="btn primary" href="#/learning">🌲 学习讲解</a>
+        <a class="btn" href="#/exercises">🎯 练习与挑战</a>
+      </div>
       <h1>植树问题：核心概念与方法</h1>
       <p>本页将系统梳理植树问题的四种常见情形与对应公式，配合直观可视化，帮助五年级同学构建清晰的数学模型。</p>
     </div>

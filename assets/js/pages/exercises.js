@@ -77,6 +77,10 @@ export function Exercises(){
   el.innerHTML = `
     <!-- 欢迎区域 -->
     <div class="hero">
+      <div class="mobile-cta" role="navigation" aria-label="快速入口（移动端）">
+        <a class="btn" href="#/learning">🌲 学习讲解</a>
+        <a class="btn primary" href="#/exercises">🎯 练习与挑战</a>
+      </div>
       <h1>练习与挑战</h1>
       <p>完成以下练习，巩固对不同情形公式的理解与应用。</p>
     </div>
