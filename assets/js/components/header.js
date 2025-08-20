@@ -1,3 +1,5 @@
+import { themeManager } from '../shared/theme.js';
+
 const navLinks = [
   { href: '#/', label: '首页' },
   { href: '#/concepts', label: '概念讲解' },
@@ -9,6 +11,7 @@ const navLinks = [
 ];
 
 export function renderHeader(container){
+  const currentTheme = themeManager.getCurrentTheme();
   const header = document.createElement('div');
   header.className = 'navbar';
   header.innerHTML = `
@@ -17,9 +20,14 @@ export function renderHeader(container){
         <div class="logo" aria-hidden="true"></div>
         <span>植树问题智能课堂</span>
       </div>
-      <nav class="nav" aria-label="主导航">
-        ${navLinks.map(l => `<a href="${l.href}" data-href="${l.href}">${l.label}</a>`).join('')}
-      </nav>
+      <div style="display: flex; align-items: center;">
+        <nav class="nav" aria-label="主导航">
+          ${navLinks.map(l => `<a href="${l.href}" data-href="${l.href}">${l.label}</a>`).join('')}
+        </nav>
+        <button class="theme-toggle" id="theme-toggle" title="${themeManager.getThemeName(currentTheme)}">
+          ${themeManager.getThemeIcon(currentTheme)}
+        </button>
+      </div>
     </div>
   `;
   container.innerHTML = '';
@@ -33,5 +41,18 @@ export function renderHeader(container){
   };
   setActive();
   window.addEventListener('hashchange', setActive);
+
+  // 主题切换功能
+  const themeToggle = header.querySelector('#theme-toggle');
+  const updateThemeButton = () => {
+    const currentTheme = themeManager.getCurrentTheme();
+    themeToggle.innerHTML = themeManager.getThemeIcon(currentTheme);
+    themeToggle.title = themeManager.getThemeName(currentTheme);
+  };
+
+  themeToggle.addEventListener('click', () => {
+    themeManager.toggleTheme();
+    updateThemeButton();
+  });
 }
 
