@@ -56,7 +56,7 @@ export function Learning(){
         <div class="card" style="grid-column:span 6;">
           <h3>${it.title}</h3>
           <div style="font-size: 20px; text-align: left; margin: 8px 0; padding: 8px 12px; background: rgba(37,99,235,0.06); border-left: 4px solid var(--accent); border-radius: 8px;">
-            示例图标：${it.emoji}
+            ${({ both: '两端都种树：🌳🌳🌳🌳🌳', none: '两端都不种：❌🌳🌳🌳❌', one: '一端种，一端不种：🌳🌳🌳🌳❌', circle: '环形（圆形）种树：⭕' })[it.key]}
           </div>
           <p style="color: var(--muted); font-size: 14px;">${it.story}</p>
           <p>${it.idea}</p>
@@ -89,17 +89,7 @@ export function Learning(){
       <div style="background: linear-gradient(135deg, rgba(255,107,157,0.05), rgba(78,205,196,0.05)); padding: 20px; border-radius: 15px; margin: 16px 0;">
         <h3 style="color: var(--accent-2); margin-top: 0;">参数设置</h3>
         <div class="controls">
-          <div class="input">
-            <label>路的长度（米）</label>
-            <input id="len" type="number" value="100" min="1" max="1000" step="1">
-            <small style="color: var(--muted);">例如：100</small>
-          </div>
-          <div class="input">
-            <label>树的间距（米）</label>
-            <input id="d" type="number" value="10" min="1" max="50" step="1">
-            <small style="color: var(--muted);">例如：10</small>
-          </div>
-          <div class="input">
+          <div class="input" style="flex-basis: 100%;">
             <label>种树方式</label>
             <select id="mode">
               <option value="both">两端都种树</option>
@@ -107,6 +97,18 @@ export function Learning(){
               <option value="one">一端种，一端不种</option>
               <option value="circle">环形（圆形）</option>
             </select>
+          </div>
+          <div class="input-row" style="display:flex; gap:16px; width:100%; flex-wrap:wrap;">
+            <div class="input" style="flex:1; min-width: 180px;">
+              <label>路的长度（米）</label>
+              <input id="len" type="number" value="100" min="1" max="1000" step="1">
+              <small style="color: var(--muted);">例如：100</small>
+            </div>
+            <div class="input" style="flex:1; min-width: 180px;">
+              <label>树的间距（米）</label>
+              <input id="d" type="number" value="10" min="1" max="50" step="1">
+              <small style="color: var(--muted);">例如：10</small>
+            </div>
           </div>
         </div>
 

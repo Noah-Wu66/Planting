@@ -118,64 +118,8 @@ export function Exercises(){
         </div>
       </div>
     `).join('')}
-    
-    <!-- 小游戏部分 -->
-    <div class="card" style="margin-top:20px;">
-      <h2>30 秒参数挑战</h2>
-      <p>在 30 秒内多次找到能产生有效排布的参数组合。</p>
 
-      <div style="background: linear-gradient(135deg, rgba(255,107,157,0.1), rgba(78,205,196,0.1)); padding: 20px; border-radius: 15px; margin: 16px 0;">
-        <h3 style="color: var(--accent); margin-top: 0;">控制台</h3>
-        <div class="controls">
-          <div class="input">
-            <label>路的长度</label>
-            <input id="L" type="range" min="40" max="200" value="100">
-            <div style="text-align: center; color: var(--muted); font-size: 14px; margin-top: 4px;">
-              <span id="L-value">100</span> 米
-            </div>
-          </div>
-          <div class="input">
-            <label>树的间距</label>
-            <input id="d" type="range" min="4" max="40" value="10">
-            <div style="text-align: center; color: var(--muted); font-size: 14px; margin-top: 4px;">
-              <span id="d-value">10</span> 米
-            </div>
-          </div>
-          <div class="input">
-            <label>种树方式</label>
-            <select id="mode">
-              <option value="both">两端都种树</option>
-              <option value="none">两端都不种</option>
-              <option value="one">一端种，一端不种</option>
-              <option value="circle">环形（圆形）</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="text-align: center; margin: 20px 0;">
-          <button class="btn primary" id="start" style="font-size: 18px; padding: 16px 32px;">
-            开始
-          </button>
-        </div>
-      </div>
-
-      <div style="text-align: center; margin: 16px 0;">
-        <div class="badge" id="status" style="font-size: 18px; padding: 16px 24px;">
-          点击“开始”，挑战 30 秒内尽可能多地得到有效排布
-        </div>
-      </div>
-
-      <div class="canvas-wrap">
-        <canvas id="cv" class="canvas"></canvas>
-        <div style="position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 10px; font-size: 12px; color: var(--muted);">
-          🎮 超级植树游戏
-        </div>
-      </div>
-
-      <div style="text-align: center; margin-top: 16px; color: var(--muted); font-size: 14px;">
-        💡 游戏提示：调整滑块让数字能够整除，小树们就会排列整齐！
-      </div>
-    </div>
+    <!-- 已移除 30 秒参数挑战模块 -->
   `;
 
   setTimeout(()=>{
@@ -189,7 +133,7 @@ export function Exercises(){
         if (completedCount === 6) {
           progressEl.parentElement.innerHTML = `
             <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
-            <p style="margin: 0; color: var(--success); font-weight: 600;">已全部完成，继续巩固可进入挑战模式。</p>
+            <p style="margin: 0; color: var(--success); font-weight: 600;">已全部完成，太棒了！</p>
           `;
         }
       }
@@ -243,136 +187,7 @@ export function Exercises(){
       });
     });
 
-    // 小游戏功能
-    const $=(id)=>el.querySelector(id);
-    const cv=$('#cv'); const ctx = cv.getContext('2d');
-    function resize(){ const r=cv.parentElement.getBoundingClientRect(); cv.width=r.width; cv.height=r.height; }
-    resize(); window.addEventListener('resize', resize);
-
-    let score=0, timeLeft=30, timer=null, running=false;
-
-    // 更新滑块显示值
-    $('#L').addEventListener('input', (e) => {
-      $('#L-value').textContent = e.target.value;
-    });
-
-    $('#d').addEventListener('input', (e) => {
-      $('#d-value').textContent = e.target.value;
-    });
-
-    function updateStatus(txt){
-      $('#status').innerHTML = `得分: <strong>${score}</strong> · 倒计时: <strong>${timeLeft}</strong> 秒 · ${txt}`;
-    }
-
-    function drawOK(){
-      const w=cv.width,h=cv.height;
-      ctx.clearRect(0,0,w,h);
-
-      // 绘制庆祝背景
-      const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w,h)/2);
-      grad.addColorStop(0, 'rgba(126,231,135,0.3)');
-      grad.addColorStop(1, 'rgba(126,231,135,0.05)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-
-      // 绘制成功信息
-      ctx.fillStyle='#16A34A';
-      ctx.font='bold 24px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText('+1 分', w/2, h/2 - 6);
-
-      ctx.fillStyle='#059669';
-      ctx.font='16px system-ui';
-      ctx.fillText('成功生成有效排布', w/2, h/2 + 18);
-    }
-
-    function drawFail(){
-      const w=cv.width,h=cv.height;
-      ctx.clearRect(0,0,w,h);
-
-      ctx.fillStyle='#D97706';
-      ctx.font='bold 22px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText('再试一次', w/2, h/2 - 8);
-
-      ctx.fillStyle='#92400E';
-      ctx.font='14px system-ui';
-      ctx.fillText('调整参数，寻找可行解', w/2, h/2 + 16);
-    }
-
-    function tick(){
-      if(!running) return;
-      timeLeft--;
-      updateStatus('🎮 游戏进行中');
-      if(timeLeft<=0){
-        running=false;
-        clearInterval(timer);
-        $('#status').innerHTML = `结束！最终得分 <strong style="color: var(--accent); font-size: 20px;">${score}</strong> 分。`;
-
-        // 绘制结束画面
-        const w=cv.width,h=cv.height;
-        ctx.clearRect(0,0,w,h);
-        ctx.fillStyle = '#2563EB';
-        ctx.font='bold 28px system-ui';
-        ctx.textAlign = 'center';
-        ctx.fillText('挑战结束', w/2, h/2);
-      }
-    }
-
-    function check(){
-      const L=parseInt($('#L').value,10);
-      const d=parseInt($('#d').value,10);
-      const mode=$('#mode').value;
-      const n = formulas.computeTreeCount({L,d,mode});
-
-      if(Number.isFinite(n) && n > 0){
-        score++;
-        drawOK();
-        updateStatus('🎉 答对啦！继续挑战');
-
-        // 随机改变参数增加挑战性
-        setTimeout(() => {
-          $('#L').value = Math.floor(Math.random() * 160) + 40;
-          $('#d').value = Math.floor(Math.random() * 36) + 4;
-          $('#L-value').textContent = $('#L').value;
-          $('#d-value').textContent = $('#d').value;
-        }, 1000);
-      } else {
-        drawFail();
-        updateStatus('🤔 再试试看');
-      }
-    }
-
-    $('#start').addEventListener('click',()=>{
-      score=0;
-      timeLeft=30;
-      running=true;
-      updateStatus('🚀 游戏开始！快调整参数');
-      clearInterval(timer);
-      timer=setInterval(tick,1000);
-
-      // 清空画布，显示开始信息
-      const w=cv.width,h=cv.height;
-      ctx.clearRect(0,0,w,h);
-      ctx.fillStyle='#2563EB';
-      ctx.font='bold 22px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText('开始', w/2, h/2 - 8);
-      ctx.fillStyle='#059669';
-      ctx.font='14px system-ui';
-      ctx.fillText('调整滑块，寻找可行解', w/2, h/2 + 14);
-    });
-
-    // 当滑块停止 500ms 后自动判定一次
-    let debounce=null;
-    ['L','d','mode'].forEach(id=>{
-      $('#'+id).addEventListener('input', ()=>{
-        if(!running) return;
-        updateStatus('🎯 正在调整参数');
-        clearTimeout(debounce);
-        debounce=setTimeout(check, 500);
-      });
-    });
+    // 练习题页：小游戏模块已移除
   },0);
 
   return el;
