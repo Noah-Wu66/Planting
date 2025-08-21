@@ -31,9 +31,7 @@
   --nav-hover: rgba(37,99,235,0.08);
   --badge-bg: linear-gradient(135deg, #F3F4F6, #EFF6FF);
 
-  /* 画布样式 */
-  --canvas-bg: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F0FDF4 100%);
-  --canvas-border: rgba(37,99,235,0.22);
+
 
   /* 背景 */
   --body-bg: var(--bg);
@@ -71,9 +69,7 @@
   --nav-hover: rgba(96,165,250,0.18);
   --badge-bg: linear-gradient(135deg, rgba(17,24,39,0.85), rgba(31,41,55,0.85));
 
-  /* 画布样式 */
-  --canvas-bg: linear-gradient(135deg, #111827 0%, #0F172A 50%, #1F2937 100%);
-  --canvas-border: rgba(96,165,250,0.3);
+
 
   /* 背景 */
   --body-bg: var(--bg);
@@ -533,28 +529,7 @@ header,footer{
   .mobile-cta .btn{ width: 100%; }
 }
 
-/* 画布容器样式 - 儿童友好设计 */
-.canvas-wrap{
-  position: relative;
-  width: 100%;
-  height: 320px;
-  border-radius: 20px;
-  overflow: hidden;
-  border: 3px dashed var(--canvas-border);
-  background: var(--canvas-bg);
-  box-shadow: 0 8px 25px rgba(78,205,196,0.1) inset;
-  transition: all 0.3s ease;
-}
 
-/* 移除画布容器悬浮效果 */
-
-.canvas{
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: var(--canvas-bg);
-  border-radius: 17px;
-}
 
 /* 响应式设计 - 儿童友好适配 */
 @media (min-width: 768px){
@@ -564,9 +539,7 @@ header,footer{
 
 
 
-  .canvas-wrap{
-    height: 400px;
-  }
+
 
   .container {
     padding: 24px;
@@ -620,7 +593,7 @@ header,footer{
   /* 布局与排版 */
   .grid{ grid-template-columns: 1fr; }
   .grid > * { grid-column: 1 / -1 !important; }
-  .canvas-wrap{ height: clamp(240px, 48vw, 320px); }
+
   .hero h1{ font-size: 28px; }
   .card h2{ font-size: 20px; }
   .card{ padding: 20px; }
@@ -635,9 +608,66 @@ header,footer{
 
 /* 特小屏兜底（如 320-360 宽） */
 @media (max-width: 374px){
-  .canvas-wrap{ height: 220px; }
+
   .hero h1{ font-size: 24px; }
   .card{ padding: 16px; }
+}
+
+/* AI学习模块样式 */
+.draggable-tree {
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.draggable-tree:hover {
+  transform: scale(1.05) !important;
+}
+
+.draggable-tree:active {
+  transform: scale(0.95) !important;
+}
+
+.chat-message {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 拖拽区域样式 */
+#drag-area {
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+#drag-area:hover {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+/* 按钮样式增强 */
+.btn.small {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+/* 输入框增强 */
+.input input:focus,
+.input select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* 精简装饰元素，聚焦内容 */

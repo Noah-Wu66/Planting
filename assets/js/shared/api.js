@@ -1,0 +1,94 @@
+// API配置和工具函数
+const API_CONFIG = {
+  baseURL: 'http://localhost:8000',
+  timeout: 30000
+};
+
+// API请求工具
+export class APIClient {
+  constructor(config = API_CONFIG) {
+    this.baseURL = config.baseURL;
+    this.timeout = config.timeout;
+  }
+
+  async request(endpoint, options = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    const config = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      ...options
+    };
+
+    // 添加超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    config.signal = controller.signal;
+
+    try {
+      const response = await fetch(url, config);
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error.name === 'AbortError') {
+        throw new Error('请求超时，请检查网络连接');
+      }
+      
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('无法连接到服务器，请确保后端服务已启动');
+      }
+      
+      throw error;
+    }
+  }
+
+  async get(endpoint) {
+    return this.request(endpoint);
+  }
+
+  async post(endpoint, data) {
+    return this.request(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async put(endpoint, data) {
+    return this.request(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async delete(endpoint) {
+    return this.request(endpoint, {
+      method: 'DELETE'
+    });
+  }
+}
+
+// 创建默认API客户端实例
+export const apiClient = new APIClient();
+
+// AI聊天API
+export async function chatWithAI(message, interactionState, chatHistory = [], isNewConversation = false) {
+  return apiClient.post('/api/chat', {
+    message,
+    interaction_state: interactionState,
+    chat_history: chatHistory,
+    is_new_conversation: isNewConversation
+  });
+}
+
+// 健康检查API
+export async function healthCheck() {
+  return apiClient.get('/api/health');
+}

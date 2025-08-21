@@ -1,7 +1,7 @@
 import { themeManager } from '../shared/theme.js';
 
 const navLinks = [
-  { href: '#/learning', label: '学习讲解', emoji: '🌲' },
+  { href: '#/ai-learning', label: 'AI学习', emoji: '🤖' },
   { href: '#/exercises', label: '练习与挑战', emoji: '🎯' },
 ];
 
@@ -33,8 +33,8 @@ export function renderHeader(container){
     const currentHash = window.location.hash || '#/';
     header.querySelectorAll('a').forEach(a => {
       const href = a.getAttribute('data-href');
-      // 默认路由 '#/' 对应学习页面
-      if ((currentHash === '#/' && href === '#/learning') || href === currentHash) {
+      // 默认路由 '#/' 对应AI学习页面
+      if ((currentHash === '#/' && href === '#/ai-learning') || href === currentHash) {
         a.classList.add('active');
       } else {
         a.classList.remove('active');

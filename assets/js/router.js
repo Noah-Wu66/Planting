@@ -1,10 +1,10 @@
-import { Learning } from './pages/learning.js';
+import { AILearning } from './pages/ai-learning.js';
 import { Exercises } from './pages/exercises.js';
 
 const routes = {
-  '': Learning,
-  '#/': Learning,
-  '#/learning': Learning,
+  '': AILearning,
+  '#/': AILearning,
+  '#/ai-learning': AILearning,
   '#/exercises': Exercises,
 };
 
@@ -24,7 +24,7 @@ export const router = {
   init() {
     const onRoute = () => {
       const hash = window.location.hash || '#/';
-      const Component = routes[hash] || Learning;
+      const Component = routes[hash] || AILearning;
       render(Component);
     };
     window.addEventListener('hashchange', onRoute);
