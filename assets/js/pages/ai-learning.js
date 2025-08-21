@@ -34,6 +34,15 @@ export function AILearning(){
             <option value="circle">环形种树</option>
           </select>
         </div>
+        <div class="input">
+          <label>图形模式</label>
+          <select id="shape-mode">
+            <option value="line">直线</option>
+            <option value="circle">圆形</option>
+            <option value="triangle">三角形</option>
+            <option value="square">正方形</option>
+          </select>
+        </div>
       </div>
       <div style="text-align: center;">
         <button class="btn" id="clear-all">🗑️ 清空重置</button>
@@ -55,6 +64,7 @@ export function AILearning(){
         <!-- 树木工具栏 -->
         <div style="position: absolute; top: 10px; left: 10px; display: flex; gap: 8px; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 8px; flex-wrap: wrap;">
           <button class="btn small" id="add-tree">🌳 添加树木</button>
+          <button class="btn small" id="delete-tree" disabled>🗑️ 删除最后一棵</button>
           <span style="font-size: 12px; color: var(--muted); align-self: center;" id="drag-hint">拖拽树木到线段上</span>
         </div>
 
@@ -124,7 +134,8 @@ function initDragInteraction(container) {
     interval: 10,
     startX: 50,
     startY: 150,
-    endX: 550
+    endX: 550,
+    shape: 'line' // 新增图形模式
   };
   let treeIdCounter = 0;
 
@@ -132,9 +143,11 @@ function initDragInteraction(container) {
   function updateGround() {
     const length = parseFloat(container.querySelector('#ground-length').value);
     const interval = parseFloat(container.querySelector('#tree-interval').value);
+    const shape = container.querySelector('#shape-mode').value;
 
     groundConfig.length = length;
     groundConfig.interval = interval;
+    groundConfig.shape = shape;
 
     // 计算地面在SVG中的像素长度（比例缩放）
     const maxPixelLength = dragArea.clientWidth - 100; // 留边距
@@ -145,13 +158,83 @@ function initDragInteraction(container) {
     groundConfig.startX = centerX - pixelLength / 2;
     groundConfig.endX = centerX + pixelLength / 2;
 
-    // 更新地面线段
-    groundLine.setAttribute('x1', groundConfig.startX);
-    groundLine.setAttribute('x2', groundConfig.endX);
+    // 根据图形模式更新地面显示
+    updateGroundShape();
 
     // 生成吸附点
     updateSnapPoints();
     updateMeasurements();
+  }
+
+  // 更新地面图形显示
+  function updateGroundShape() {
+    // 清除现有的地面图形
+    const existingShapes = groundSvg.querySelectorAll('.ground-shape');
+    existingShapes.forEach(shape => shape.remove());
+
+    const centerX = (groundConfig.startX + groundConfig.endX) / 2;
+    const centerY = groundConfig.startY;
+    const size = Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
+
+    switch (groundConfig.shape) {
+      case 'line':
+        // 直线模式
+        groundLine.setAttribute('x1', groundConfig.startX);
+        groundLine.setAttribute('x2', groundConfig.endX);
+        groundLine.setAttribute('y1', groundConfig.startY);
+        groundLine.setAttribute('y2', groundConfig.startY);
+        groundLine.style.display = 'block';
+        break;
+
+      case 'circle':
+        // 圆形模式
+        groundLine.style.display = 'none';
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', centerX);
+        circle.setAttribute('cy', centerY);
+        circle.setAttribute('r', size);
+        circle.setAttribute('stroke', '#2563eb');
+        circle.setAttribute('stroke-width', '6');
+        circle.setAttribute('stroke-dasharray', '8,4');
+        circle.setAttribute('fill', 'none');
+        circle.classList.add('ground-shape');
+        groundSvg.appendChild(circle);
+        break;
+
+      case 'triangle':
+        // 三角形模式
+        groundLine.style.display = 'none';
+        const triangle = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        const trianglePoints = [
+          `${centerX},${centerY - size * 0.8}`,
+          `${centerX - size * 0.8},${centerY + size * 0.4}`,
+          `${centerX + size * 0.8},${centerY + size * 0.4}`
+        ].join(' ');
+        triangle.setAttribute('points', trianglePoints);
+        triangle.setAttribute('stroke', '#2563eb');
+        triangle.setAttribute('stroke-width', '6');
+        triangle.setAttribute('stroke-dasharray', '8,4');
+        triangle.setAttribute('fill', 'none');
+        triangle.classList.add('ground-shape');
+        groundSvg.appendChild(triangle);
+        break;
+
+      case 'square':
+        // 正方形模式
+        groundLine.style.display = 'none';
+        const square = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        square.setAttribute('x', centerX - size);
+        square.setAttribute('y', centerY - size);
+        square.setAttribute('width', size * 2);
+        square.setAttribute('height', size * 2);
+        square.setAttribute('stroke', '#2563eb');
+        square.setAttribute('stroke-width', '6');
+        square.setAttribute('stroke-dasharray', '8,4');
+        square.setAttribute('fill', 'none');
+        square.classList.add('ground-shape');
+        groundSvg.appendChild(square);
+        break;
+    }
   }
 
   // 更新吸附点
@@ -159,48 +242,26 @@ function initDragInteraction(container) {
     snapPoints.innerHTML = '';
 
     const mode = container.querySelector('#tree-mode').value;
-    const pixelInterval = (groundConfig.endX - groundConfig.startX) * groundConfig.interval / groundConfig.length;
+    const shape = groundConfig.shape;
 
     let points = [];
 
-    if (mode === 'circle') {
-      // 环形模式：均匀分布在圆周上
-      const centerX = (groundConfig.startX + groundConfig.endX) / 2;
-      const centerY = groundConfig.startY;
-      const radius = (groundConfig.endX - groundConfig.startX) / 2 * 0.8;
-      const numPoints = Math.floor(groundConfig.length / groundConfig.interval);
-
-      for (let i = 0; i < numPoints; i++) {
-        const angle = (i / numPoints) * 2 * Math.PI;
-        const x = centerX + radius * Math.cos(angle);
-        const y = centerY + radius * Math.sin(angle);
-        points.push({ x, y });
-      }
-    } else {
-      // 修复问题3：直线模式 - 确保吸附点精确位于线段端点和间隔点
-      const numIntervals = Math.floor(groundConfig.length / groundConfig.interval);
-
-      for (let i = 0; i <= numIntervals; i++) {
-        // 精确计算每个吸附点的位置，确保端点位置准确
-        const x = groundConfig.startX + i * pixelInterval;
-        const y = groundConfig.startY;
-
-        // 根据模式决定是否包含端点
-        if (mode === 'both' ||
-            (mode === 'one' && i === 0) ||
-            (mode === 'none' && i > 0 && i < numIntervals)) {
-          points.push({ x, y });
-        }
-      }
-
-      // 修复问题3：确保线段的两个端点始终被包含（如果模式允许）
-      if (mode === 'both') {
-        // 确保起点和终点精确对应线段端点
-        points[0] = { x: groundConfig.startX, y: groundConfig.startY };
-        if (points.length > 1) {
-          points[points.length - 1] = { x: groundConfig.endX, y: groundConfig.startY };
-        }
-      }
+    // 根据图形模式生成不同的种植点
+    switch (shape) {
+      case 'line':
+        points = generateLinePoints(mode);
+        break;
+      case 'circle':
+        points = generateCirclePoints(mode);
+        break;
+      case 'triangle':
+        points = generateTrianglePoints(mode);
+        break;
+      case 'square':
+        points = generateSquarePoints(mode);
+        break;
+      default:
+        points = generateLinePoints(mode);
     }
 
     // 绘制吸附点
@@ -217,6 +278,139 @@ function initDragInteraction(container) {
       circle.setAttribute('data-snap-index', index);
       snapPoints.appendChild(circle);
     });
+
+    return points;
+  }
+
+  // 生成直线种植点
+  function generateLinePoints(mode) {
+    const pixelInterval = (groundConfig.endX - groundConfig.startX) * groundConfig.interval / groundConfig.length;
+    const numIntervals = Math.floor(groundConfig.length / groundConfig.interval);
+    let points = [];
+
+    if (mode === 'circle') {
+      // 环形模式：均匀分布在圆周上
+      const centerX = (groundConfig.startX + groundConfig.endX) / 2;
+      const centerY = groundConfig.startY;
+      const radius = (groundConfig.endX - groundConfig.startX) / 2 * 0.8;
+      const numPoints = Math.floor(groundConfig.length / groundConfig.interval);
+
+      for (let i = 0; i < numPoints; i++) {
+        const angle = (i / numPoints) * 2 * Math.PI;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        points.push({ x, y });
+      }
+    } else {
+      // 直线模式
+      for (let i = 0; i <= numIntervals; i++) {
+        const x = groundConfig.startX + i * pixelInterval;
+        const y = groundConfig.startY;
+
+        // 根据模式决定是否包含端点
+        if (mode === 'both' ||
+            (mode === 'one' && i === 0) ||
+            (mode === 'none' && i > 0 && i < numIntervals)) {
+          points.push({ x, y });
+        }
+      }
+
+      // 确保端点精确对应线段端点
+      if (mode === 'both' && points.length > 1) {
+        points[0] = { x: groundConfig.startX, y: groundConfig.startY };
+        points[points.length - 1] = { x: groundConfig.endX, y: groundConfig.startY };
+      }
+    }
+
+    return points;
+  }
+
+  // 生成圆形种植点
+  function generateCirclePoints(mode) {
+    const centerX = (groundConfig.startX + groundConfig.endX) / 2;
+    const centerY = groundConfig.startY;
+    const radius = Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
+
+    // 计算圆周长和需要的点数
+    const circumference = 2 * Math.PI * radius;
+    const numPoints = Math.floor(circumference / (groundConfig.interval * 10)); // 转换为像素间距
+
+    let points = [];
+    for (let i = 0; i < numPoints; i++) {
+      const angle = (i / numPoints) * 2 * Math.PI;
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+      points.push({ x, y });
+    }
+
+    return points;
+  }
+
+  // 生成三角形种植点
+  function generateTrianglePoints(mode) {
+    const centerX = (groundConfig.startX + groundConfig.endX) / 2;
+    const centerY = groundConfig.startY;
+    const size = Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
+
+    // 等边三角形的三个顶点
+    const vertices = [
+      { x: centerX, y: centerY - size * 0.8 }, // 顶点
+      { x: centerX - size * 0.8, y: centerY + size * 0.4 }, // 左下
+      { x: centerX + size * 0.8, y: centerY + size * 0.4 }  // 右下
+    ];
+
+    let points = [];
+    const pixelInterval = groundConfig.interval * 8; // 调整间距比例
+
+    // 在三条边上生成点
+    for (let i = 0; i < 3; i++) {
+      const start = vertices[i];
+      const end = vertices[(i + 1) % 3];
+      const edgeLength = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+      const numPoints = Math.floor(edgeLength / pixelInterval);
+
+      for (let j = 0; j < numPoints; j++) {
+        const t = j / numPoints;
+        const x = start.x + (end.x - start.x) * t;
+        const y = start.y + (end.y - start.y) * t;
+        points.push({ x, y });
+      }
+    }
+
+    return points;
+  }
+
+  // 生成正方形种植点
+  function generateSquarePoints(mode) {
+    const centerX = (groundConfig.startX + groundConfig.endX) / 2;
+    const centerY = groundConfig.startY;
+    const size = Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
+
+    // 正方形的四个顶点
+    const vertices = [
+      { x: centerX - size, y: centerY - size }, // 左上
+      { x: centerX + size, y: centerY - size }, // 右上
+      { x: centerX + size, y: centerY + size }, // 右下
+      { x: centerX - size, y: centerY + size }  // 左下
+    ];
+
+    let points = [];
+    const pixelInterval = groundConfig.interval * 8; // 调整间距比例
+
+    // 在四条边上生成点
+    for (let i = 0; i < 4; i++) {
+      const start = vertices[i];
+      const end = vertices[(i + 1) % 4];
+      const edgeLength = Math.abs(i % 2 === 0 ? end.x - start.x : end.y - start.y);
+      const numPoints = Math.floor(edgeLength / pixelInterval);
+
+      for (let j = 0; j < numPoints; j++) {
+        const t = j / numPoints;
+        const x = start.x + (end.x - start.x) * t;
+        const y = start.y + (end.y - start.y) * t;
+        points.push({ x, y });
+      }
+    }
 
     return points;
   }
@@ -252,6 +446,7 @@ function initDragInteraction(container) {
 
   // 初始化
   updateGround();
+  updateTreeDisplay(); // 确保删除按钮初始状态正确
 
   // 事件监听器
   container.querySelector('#update-ground').addEventListener('click', updateGround);
@@ -262,6 +457,7 @@ function initDragInteraction(container) {
     container.querySelector('#ground-length').value = 100;
     container.querySelector('#tree-interval').value = 10;
     container.querySelector('#tree-mode').value = 'both';
+    container.querySelector('#shape-mode').value = 'line';
     updateGround();
   });
 
@@ -491,10 +687,46 @@ function initDragInteraction(container) {
     if (placedTrees > 0) {
       treeCountDisplay.textContent += ` (${placedTrees} 已放置)`;
     }
+
+    // 更新删除按钮状态
+    const deleteButton = container.querySelector('#delete-tree');
+    if (deleteButton) {
+      deleteButton.disabled = trees.length === 0;
+    }
+  }
+
+  // 删除最后一棵树
+  function deleteLastTree() {
+    if (trees.length > 0) {
+      const lastTree = trees[trees.length - 1];
+      const treeEl = container.querySelector(`#${lastTree.id}`);
+      if (treeEl) {
+        treeEl.remove();
+      }
+      trees.pop();
+      updateTreeDisplay();
+      if (window.updateChatInputState) window.updateChatInputState();
+    }
   }
 
   // 添加树木按钮事件
   container.querySelector('#add-tree').addEventListener('click', addTree);
+
+  // 删除树木按钮事件
+  container.querySelector('#delete-tree').addEventListener('click', deleteLastTree);
+
+  // 图形模式切换事件
+  container.querySelector('#shape-mode').addEventListener('change', () => {
+    // 切换图形模式时，清除已放置的树木或重新调整位置
+    trees.forEach(tree => {
+      tree.isPlaced = false;
+      const treeEl = container.querySelector(`#${tree.id}`);
+      if (treeEl) {
+        treeEl.style.filter = '';
+      }
+    });
+    updateGround();
+  });
 
   // 移动端提示文本优化
   if (isMobile) {
@@ -513,7 +745,8 @@ function initDragInteraction(container) {
       start_x: groundConfig.startX,
       start_y: groundConfig.startY
     },
-    tree_mode: container.querySelector('#tree-mode').value
+    tree_mode: container.querySelector('#tree-mode').value,
+    shape_mode: container.querySelector('#shape-mode').value
   }));
 }
 
@@ -548,6 +781,23 @@ function initChatFeature(container, getInteractionState) {
     }
   }
 
+  // 简单的Markdown解析函数
+  function parseMarkdown(text) {
+    return text
+      // 粗体 **text**
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // 斜体 *text*
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // 代码 `code`
+      .replace(/`(.*?)`/g, '<code style="background: #f3f4f6; padding: 2px 4px; border-radius: 3px; font-family: monospace;">$1</code>')
+      // 换行
+      .replace(/\n/g, '<br>')
+      // 数字列表 1. item
+      .replace(/^(\d+)\.\s+(.+)$/gm, '<div style="margin: 4px 0;"><strong>$1.</strong> $2</div>')
+      // 无序列表 - item 或 * item
+      .replace(/^[-*]\s+(.+)$/gm, '<div style="margin: 4px 0; padding-left: 16px;">• $1</div>');
+  }
+
   // 添加消息到对话历史
   function addMessage(role, content, isError = false) {
     const messageEl = document.createElement('div');
@@ -557,6 +807,7 @@ function initChatFeature(container, getInteractionState) {
       padding: 12px 16px;
       border-radius: 12px;
       max-width: 80%;
+      line-height: 1.5;
       ${role === 'user' ?
         'background: var(--accent); color: white; margin-left: auto; text-align: right;' :
         `background: ${isError ? '#fee2e2' : '#f1f5f9'}; color: ${isError ? '#dc2626' : 'var(--text)'}; margin-right: auto;`
@@ -565,13 +816,21 @@ function initChatFeature(container, getInteractionState) {
 
     if (role === 'assistant') {
       const avatar = document.createElement('div');
-      avatar.style.cssText = 'display: inline-block; margin-right: 8px; font-size: 16px;';
+      avatar.style.cssText = 'display: inline-block; margin-right: 8px; font-size: 16px; vertical-align: top;';
       avatar.textContent = isError ? '⚠️' : '🤖';
       messageEl.appendChild(avatar);
     }
 
-    const textEl = document.createElement('span');
-    textEl.textContent = content;
+    const textEl = document.createElement('div');
+    textEl.style.cssText = 'display: inline-block; max-width: calc(100% - 32px);';
+
+    // 对于AI回复，使用Markdown解析；对于用户消息，使用纯文本
+    if (role === 'assistant' && !isError) {
+      textEl.innerHTML = parseMarkdown(content);
+    } else {
+      textEl.textContent = content;
+    }
+
     messageEl.appendChild(textEl);
 
     // 清空欢迎消息
