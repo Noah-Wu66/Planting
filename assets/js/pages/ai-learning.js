@@ -47,7 +47,7 @@ export function AILearning(){
       <div id="drag-area" style="position: relative; width: 100%; height: 300px; border: 2px dashed var(--accent); border-radius: 12px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); overflow: hidden;">
         <!-- 地面线段 -->
         <svg id="ground-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
-          <line id="ground-line" x1="50" y1="150" x2="550" y2="150" stroke="#2563eb" stroke-width="4" stroke-dasharray="5,5"/>
+          <line id="ground-line" x1="50" y1="150" x2="550" y2="150" stroke="#2563eb" stroke-width="6" stroke-dasharray="8,4"/>
           <g id="snap-points"></g>
           <g id="measurements"></g>
         </svg>
@@ -140,7 +140,10 @@ function initDragInteraction(container) {
     const maxPixelLength = dragArea.clientWidth - 100; // 留边距
     const pixelLength = Math.min(maxPixelLength, length * 4); // 4像素/米的比例
 
-    groundConfig.endX = groundConfig.startX + pixelLength;
+    // 修复问题1：使地面线段在区域中心显示，向两侧均匀延长
+    const centerX = dragArea.clientWidth / 2;
+    groundConfig.startX = centerX - pixelLength / 2;
+    groundConfig.endX = centerX + pixelLength / 2;
 
     // 更新地面线段
     groundLine.setAttribute('x1', groundConfig.startX);
@@ -174,10 +177,11 @@ function initDragInteraction(container) {
         points.push({ x, y });
       }
     } else {
-      // 直线模式
+      // 修复问题3：直线模式 - 确保吸附点精确位于线段端点和间隔点
       const numIntervals = Math.floor(groundConfig.length / groundConfig.interval);
 
       for (let i = 0; i <= numIntervals; i++) {
+        // 精确计算每个吸附点的位置，确保端点位置准确
         const x = groundConfig.startX + i * pixelInterval;
         const y = groundConfig.startY;
 
@@ -188,6 +192,15 @@ function initDragInteraction(container) {
           points.push({ x, y });
         }
       }
+
+      // 修复问题3：确保线段的两个端点始终被包含（如果模式允许）
+      if (mode === 'both') {
+        // 确保起点和终点精确对应线段端点
+        points[0] = { x: groundConfig.startX, y: groundConfig.startY };
+        if (points.length > 1) {
+          points[points.length - 1] = { x: groundConfig.endX, y: groundConfig.startY };
+        }
+      }
     }
 
     // 绘制吸附点
@@ -195,11 +208,12 @@ function initDragInteraction(container) {
       const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circle.setAttribute('cx', point.x);
       circle.setAttribute('cy', point.y);
-      circle.setAttribute('r', '4');
+      // 修复问题4：增大吸附点显示尺寸，提高可视性
+      circle.setAttribute('r', '6');
       circle.setAttribute('fill', '#10b981');
       circle.setAttribute('stroke', '#065f46');
-      circle.setAttribute('stroke-width', '1');
-      circle.setAttribute('opacity', '0.7');
+      circle.setAttribute('stroke-width', '2');
+      circle.setAttribute('opacity', '0.8');
       circle.setAttribute('data-snap-index', index);
       snapPoints.appendChild(circle);
     });
@@ -211,23 +225,26 @@ function initDragInteraction(container) {
   function updateMeasurements() {
     measurements.innerHTML = '';
 
+    // 修复问题4：增大测量标注字体大小，提高可读性
     // 添加长度标注
     const lengthText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     lengthText.setAttribute('x', (groundConfig.startX + groundConfig.endX) / 2);
-    lengthText.setAttribute('y', groundConfig.startY + 25);
+    lengthText.setAttribute('y', groundConfig.startY + 30);
     lengthText.setAttribute('text-anchor', 'middle');
-    lengthText.setAttribute('font-size', '12');
+    lengthText.setAttribute('font-size', '14');
     lengthText.setAttribute('fill', '#374151');
+    lengthText.setAttribute('font-weight', 'bold');
     lengthText.textContent = `${groundConfig.length}米`;
     measurements.appendChild(lengthText);
 
     // 添加间距标注
     if (groundConfig.interval > 0) {
       const intervalText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      intervalText.setAttribute('x', groundConfig.startX + 20);
-      intervalText.setAttribute('y', groundConfig.startY - 10);
-      intervalText.setAttribute('font-size', '10');
+      intervalText.setAttribute('x', groundConfig.startX + 25);
+      intervalText.setAttribute('y', groundConfig.startY - 15);
+      intervalText.setAttribute('font-size', '12');
       intervalText.setAttribute('fill', '#6b7280');
+      intervalText.setAttribute('font-weight', 'bold');
       intervalText.textContent = `间距: ${groundConfig.interval}米`;
       measurements.appendChild(intervalText);
     }
@@ -267,16 +284,18 @@ function initDragInteraction(container) {
     treeEl.className = 'draggable-tree';
     treeEl.id = tree.id;
     treeEl.innerHTML = '🌳';
+    // 修复问题4：增大树木图标显示尺寸，提高可视性
+    const treeSize = isMobile ? '32px' : '36px'; // 移动端32px，桌面端36px
     treeEl.style.cssText = `
       position: absolute;
       left: ${tree.x}px;
       top: ${tree.y}px;
-      font-size: 24px;
+      font-size: ${treeSize};
       cursor: grab;
       user-select: none;
       z-index: 10;
       transition: transform 0.2s ease;
-      ${tree.isPlaced ? 'filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));' : ''}
+      ${tree.isPlaced ? 'filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));' : ''}
       ${isMobile ? 'touch-action: none;' : ''}
     `;
 
@@ -409,7 +428,7 @@ function initDragInteraction(container) {
   // 检查吸附
   function checkSnapping(tree, treeEl, finalSnap = false) {
     const snapPointElements = snapPoints.querySelectorAll('circle');
-    const snapThreshold = finalSnap ? 30 : 20;
+    const snapThreshold = finalSnap ? 50 : 40; // 修复问题2：增大吸附范围
 
     let closestPoint = null;
     let minDistance = Infinity;
@@ -417,7 +436,19 @@ function initDragInteraction(container) {
     snapPointElements.forEach(point => {
       const px = parseFloat(point.getAttribute('cx'));
       const py = parseFloat(point.getAttribute('cy'));
-      const distance = Math.sqrt((tree.x - px) ** 2 + (tree.y - py) ** 2);
+
+      // 修复问题2：改进距离计算，增强垂直方向的吸附能力
+      // 对于地面线段，主要考虑水平距离，垂直距离权重较小
+      const horizontalDistance = Math.abs(tree.x - px);
+      const verticalDistance = Math.abs(tree.y - py);
+
+      // 如果水平距离在合理范围内，则主要考虑垂直吸附
+      let distance;
+      if (horizontalDistance <= snapThreshold) {
+        distance = verticalDistance + horizontalDistance * 0.3; // 垂直距离为主，水平距离为辅
+      } else {
+        distance = Math.sqrt(horizontalDistance ** 2 + verticalDistance ** 2); // 标准欧几里得距离
+      }
 
       if (distance < snapThreshold && distance < minDistance) {
         minDistance = distance;
