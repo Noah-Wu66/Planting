@@ -435,7 +435,7 @@ function initDragInteraction(container) {
 
     // 获取树木图标的尺寸，用于计算中心点偏移
     const treeSize = isMobile ? 32 : 36; // 与创建时的尺寸保持一致
-    const treeRootOffsetX = treeSize / 2 - 2; // 稍微往左偏移2像素
+    const treeRootOffsetX = treeSize / 2 - 6; // 往左偏移6像素
     const treeRootOffsetY = treeSize; // 根部位于图标底部
 
     // 计算树木根部的位置（底部中心）
