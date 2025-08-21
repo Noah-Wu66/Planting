@@ -53,9 +53,9 @@ export function AILearning(){
         </svg>
 
         <!-- 树木工具栏 -->
-        <div style="position: absolute; top: 10px; left: 10px; display: flex; gap: 8px; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 8px;">
+        <div style="position: absolute; top: 10px; left: 10px; display: flex; gap: 8px; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 8px; flex-wrap: wrap;">
           <button class="btn small" id="add-tree">🌳 添加树木</button>
-          <span style="font-size: 12px; color: var(--muted); align-self: center;">拖拽树木到线段上</span>
+          <span style="font-size: 12px; color: var(--muted); align-self: center;" id="drag-hint">拖拽树木到线段上</span>
         </div>
 
         <!-- 状态显示 -->
@@ -113,6 +113,9 @@ function initDragInteraction(container) {
   const snapPoints = container.querySelector('#snap-points');
   const measurements = container.querySelector('#measurements');
   const treeCountDisplay = container.querySelector('#tree-count');
+
+  // 检测移动端
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   // 状态管理
   let trees = [];
@@ -274,32 +277,48 @@ function initDragInteraction(container) {
       z-index: 10;
       transition: transform 0.2s ease;
       ${tree.isPlaced ? 'filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));' : ''}
+      ${isMobile ? 'touch-action: none;' : ''}
     `;
 
-    // 拖拽事件
+    // 拖拽事件（支持鼠标和触摸）
     let isDragging = false;
     let startX, startY, offsetX, offsetY;
 
-    treeEl.addEventListener('mousedown', (e) => {
+    // 获取事件坐标（兼容鼠标和触摸）
+    function getEventCoords(e) {
+      if (e.touches && e.touches.length > 0) {
+        return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+      }
+      return { clientX: e.clientX, clientY: e.clientY };
+    }
+
+    // 开始拖拽
+    function startDrag(e) {
       isDragging = true;
       treeEl.style.cursor = 'grabbing';
       treeEl.style.zIndex = '20';
 
+      const coords = getEventCoords(e);
       const rect = dragArea.getBoundingClientRect();
-      startX = e.clientX - rect.left;
-      startY = e.clientY - rect.top;
+      startX = coords.clientX - rect.left;
+      startY = coords.clientY - rect.top;
       offsetX = startX - tree.x;
       offsetY = startY - tree.y;
 
       e.preventDefault();
-    });
+    }
 
-    const handleMouseMove = (e) => {
+    treeEl.addEventListener('mousedown', startDrag);
+    treeEl.addEventListener('touchstart', startDrag, { passive: false });
+
+    // 移动事件处理（兼容鼠标和触摸）
+    const handleMove = (e) => {
       if (!isDragging) return;
 
+      const coords = getEventCoords(e);
       const rect = dragArea.getBoundingClientRect();
-      const newX = e.clientX - rect.left - offsetX;
-      const newY = e.clientY - rect.top - offsetY;
+      const newX = coords.clientX - rect.left - offsetX;
+      const newY = coords.clientY - rect.top - offsetY;
 
       // 边界检查
       const boundedX = Math.max(0, Math.min(dragArea.clientWidth - 30, newX));
@@ -312,9 +331,12 @@ function initDragInteraction(container) {
 
       // 检查吸附
       checkSnapping(tree, treeEl);
+
+      e.preventDefault(); // 防止移动端滚动
     };
 
-    const handleMouseUp = () => {
+    // 结束拖拽
+    const handleEnd = (e) => {
       if (!isDragging) return;
       isDragging = false;
       treeEl.style.cursor = 'grab';
@@ -334,17 +356,50 @@ function initDragInteraction(container) {
       if (window.updateChatInputState) window.updateChatInputState();
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    // 添加事件监听器（鼠标和触摸）
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchmove', handleMove, { passive: false });
+    document.addEventListener('touchend', handleEnd);
 
-    // 双击删除
-    treeEl.addEventListener('dblclick', () => {
+    // 删除功能（双击或长按）
+    let touchTimer = null;
+
+    function deleteTree() {
       const index = trees.findIndex(t => t.id === tree.id);
       if (index > -1) {
         trees.splice(index, 1);
         treeEl.remove();
         updateTreeDisplay();
         if (window.updateChatInputState) window.updateChatInputState();
+      }
+    }
+
+    // 双击删除（桌面端）
+    treeEl.addEventListener('dblclick', deleteTree);
+
+    // 长按删除（移动端）
+    treeEl.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        touchTimer = setTimeout(() => {
+          if (confirm('确定要删除这棵树吗？')) {
+            deleteTree();
+          }
+        }, 800); // 长按800ms触发删除
+      }
+    });
+
+    treeEl.addEventListener('touchend', () => {
+      if (touchTimer) {
+        clearTimeout(touchTimer);
+        touchTimer = null;
+      }
+    });
+
+    treeEl.addEventListener('touchmove', () => {
+      if (touchTimer) {
+        clearTimeout(touchTimer);
+        touchTimer = null;
       }
     });
 
@@ -399,6 +454,14 @@ function initDragInteraction(container) {
 
   // 添加树木按钮事件
   container.querySelector('#add-tree').addEventListener('click', addTree);
+
+  // 移动端提示文本优化
+  if (isMobile) {
+    const dragHint = container.querySelector('#drag-hint');
+    if (dragHint) {
+      dragHint.textContent = '拖拽或长按删除';
+    }
+  }
 
   // 初始化AI对话功能
   initChatFeature(container, () => ({
@@ -513,6 +576,9 @@ function initChatFeature(container, getInteractionState) {
     }
   }
 
+  // 检测移动端
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
   // 事件监听
   chatInput.addEventListener('input', updateChatInputState);
   chatInput.addEventListener('keypress', (e) => {
@@ -521,6 +587,24 @@ function initChatFeature(container, getInteractionState) {
       sendMessage();
     }
   });
+
+  // 移动端优化：防止输入时页面缩放
+  if (isMobile) {
+    chatInput.addEventListener('focus', () => {
+      // 滚动到输入框位置
+      setTimeout(() => {
+        chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    });
+
+    // 移动端发送按钮优化
+    sendButton.addEventListener('touchstart', (e) => {
+      e.preventDefault(); // 防止双重触发
+      if (!sendButton.disabled) {
+        sendMessage();
+      }
+    });
+  }
 
   sendButton.addEventListener('click', () => sendMessage());
 

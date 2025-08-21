@@ -32,7 +32,7 @@ COPY index.html ./static/
 COPY README.md ./static/
 
 # 暴露端口（Zeabur会自动检测）
-EXPOSE 8000
+EXPOSE 8080
 
 # 启动命令
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

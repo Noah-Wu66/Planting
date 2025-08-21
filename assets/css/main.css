@@ -604,18 +604,111 @@ header,footer{
   /* 控件纵向排列（原有规则保留） */
   .controls { flex-direction: column; align-items: stretch; }
   .input { min-width: auto; }
+
+  /* AI学习模块移动端适配 */
+  #drag-area {
+    height: 250px; /* 移动端减小高度 */
+    margin: 0 -8px; /* 利用更多屏幕空间 */
+  }
+
+  .draggable-tree {
+    font-size: 20px; /* 移动端增大树木图标 */
+    touch-action: none;
+  }
+
+  /* 参数设置网格在移动端改为单列 */
+  .card .input {
+    margin-bottom: 12px;
+  }
+
+  /* 聊天区域移动端优化 */
+  #chat-history {
+    max-height: 200px; /* 移动端减小聊天历史高度 */
+    font-size: 14px;
+  }
+
+  .chat-message {
+    max-width: 90%; /* 移动端增加消息宽度 */
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  #chat-input {
+    font-size: 16px; /* 防止iOS缩放 */
+    padding: 12px;
+  }
+
+  /* 控制按钮移动端优化 */
+  #chat-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #chat-controls .btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  /* 工具栏移动端适配 */
+  #drag-area .btn.small {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  /* 状态显示移动端优化 */
+  #status-display {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
 }
 
 /* 特小屏兜底（如 320-360 宽） */
 @media (max-width: 374px){
-
   .hero h1{ font-size: 24px; }
   .card{ padding: 16px; }
+
+  /* AI学习模块特小屏适配 */
+  #drag-area {
+    height: 200px;
+    margin: 0 -4px;
+  }
+
+  .draggable-tree {
+    font-size: 18px;
+  }
+
+  #chat-history {
+    max-height: 150px;
+    font-size: 13px;
+  }
+
+  .chat-message {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  #chat-input {
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  /* 参数设置特小屏优化 */
+  .input label {
+    font-size: 13px;
+  }
+
+  .input input,
+  .input select {
+    font-size: 14px;
+    padding: 8px;
+  }
 }
 
 /* AI学习模块样式 */
 .draggable-tree {
   transition: transform 0.2s ease, filter 0.2s ease;
+  touch-action: none; /* 防止移动端滚动干扰拖拽 */
 }
 
 .draggable-tree:hover {
@@ -650,6 +743,7 @@ header,footer{
 #drag-area {
   position: relative;
   transition: background-color 0.3s ease;
+  min-height: 300px;
 }
 
 #drag-area:hover {
@@ -668,6 +762,25 @@ header,footer{
 .input select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* 聊天区域样式 */
+#chat-history {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+#chat-input {
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#chat-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  outline: none;
 }
 
 /* 精简装饰元素，聚焦内容 */

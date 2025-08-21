@@ -55,7 +55,7 @@ cp .env.example .env
 python main.py
 ```
 
-服务将在 `http://localhost:8000` 启动，包含前端界面和API。
+服务将在 `http://localhost:8080` 启动，包含前端界面和API。
 
 ### 3. 获取Gemini API密钥
 
@@ -123,7 +123,7 @@ python main.py
 ## 部署说明
 
 ### 本地开发
-- 单一服务: FastAPI提供前后端服务 (端口8000)
+- 单一服务: FastAPI提供前后端服务 (端口8080)
 - 静态文件: 通过FastAPI StaticFiles中间件提供
 
 ### Zeabur部署
@@ -138,7 +138,7 @@ python main.py
 docker build -t planting-app .
 
 # 运行容器
-docker run -p 8000:8000 -e GEMINI_API_KEY=your-key planting-app
+docker run -p 8080:8080 -e GEMINI_API_KEY=your-key planting-app
 ```
 
 ## 贡献指南

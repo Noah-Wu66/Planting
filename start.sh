@@ -32,8 +32,8 @@ cd ..
 
 echo
 echo "服务启动完成！"
-echo "访问地址: http://localhost:8000"
-echo "API文档: http://localhost:8000/docs"
+echo "访问地址: http://localhost:8080"
+echo "API文档: http://localhost:8080/docs"
 echo
 echo "按Ctrl+C停止服务..."
 
