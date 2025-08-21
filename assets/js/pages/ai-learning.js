@@ -507,7 +507,12 @@ function initDragInteraction(container) {
   // 初始化AI对话功能
   initChatFeature(container, () => ({
     trees: trees.filter(t => t.isPlaced).map(t => ({ x: t.x, y: t.y, id: t.id })),
-    ground: groundConfig,
+    ground: {
+      length: groundConfig.length,
+      interval: groundConfig.interval,
+      start_x: groundConfig.startX,
+      start_y: groundConfig.startY
+    },
     tree_mode: container.querySelector('#tree-mode').value
   }));
 }
