@@ -435,12 +435,12 @@ function initDragInteraction(container) {
 
     // 获取树木图标的尺寸，用于计算中心点偏移
     const treeSize = isMobile ? 32 : 36; // 与创建时的尺寸保持一致
-    const treeCenterOffsetX = treeSize / 2;
-    const treeCenterOffsetY = treeSize / 2;
+    const treeRootOffsetX = treeSize / 2;
+    const treeRootOffsetY = treeSize; // 根部位于图标底部
 
-    // 计算树木的视觉中心位置
-    const treeCenterX = tree.x + treeCenterOffsetX;
-    const treeCenterY = tree.y + treeCenterOffsetY;
+    // 计算树木根部的位置（底部中心）
+    const treeRootX = tree.x + treeRootOffsetX;
+    const treeRootY = tree.y + treeRootOffsetY;
 
     snapPointElements.forEach(point => {
       const px = parseFloat(point.getAttribute('cx'));
@@ -448,8 +448,8 @@ function initDragInteraction(container) {
 
       // 修复问题2：改进距离计算，增强垂直方向的吸附能力
       // 对于地面线段，主要考虑水平距离，垂直距离权重较小
-      const horizontalDistance = Math.abs(treeCenterX - px);
-      const verticalDistance = Math.abs(treeCenterY - py);
+      const horizontalDistance = Math.abs(treeRootX - px);
+      const verticalDistance = Math.abs(treeRootY - py);
 
       // 如果水平距离在合理范围内，则主要考虑垂直吸附
       let distance;
@@ -466,9 +466,9 @@ function initDragInteraction(container) {
     });
 
     if (closestPoint && finalSnap) {
-      // 将树木的视觉中心对齐到圆点，所以需要减去偏移量
-      tree.x = closestPoint.x - treeCenterOffsetX;
-      tree.y = closestPoint.y - treeCenterOffsetY;
+      // 将树木的根部对齐到圆点，所以需要减去偏移量
+      tree.x = closestPoint.x - treeRootOffsetX;
+      tree.y = closestPoint.y - treeRootOffsetY;
       treeEl.style.left = tree.x + 'px';
       treeEl.style.top = tree.y + 'px';
       treeEl.style.transform = 'scale(1.1)';
@@ -570,7 +570,10 @@ function initChatFeature(container, getInteractionState) {
     messageEl.appendChild(textEl);
 
     // 清空欢迎消息
-    if (chatHistory && chatHistory.children.length === 1 && chatHistory.firstChild && chatHistory.firstChild.style.textAlign === 'center') {
+    if (chatHistory && chatHistory.children.length === 1 && chatHistory.firstChild &&
+        chatHistory.firstChild.nodeType === Node.ELEMENT_NODE &&
+        chatHistory.firstChild.style &&
+        chatHistory.firstChild.style.textAlign === 'center') {
       chatHistory.innerHTML = '';
     }
 
