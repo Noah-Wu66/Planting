@@ -433,14 +433,23 @@ function initDragInteraction(container) {
     let closestPoint = null;
     let minDistance = Infinity;
 
+    // 获取树木图标的尺寸，用于计算中心点偏移
+    const treeSize = isMobile ? 32 : 36; // 与创建时的尺寸保持一致
+    const treeCenterOffsetX = treeSize / 2;
+    const treeCenterOffsetY = treeSize / 2;
+
+    // 计算树木的视觉中心位置
+    const treeCenterX = tree.x + treeCenterOffsetX;
+    const treeCenterY = tree.y + treeCenterOffsetY;
+
     snapPointElements.forEach(point => {
       const px = parseFloat(point.getAttribute('cx'));
       const py = parseFloat(point.getAttribute('cy'));
 
       // 修复问题2：改进距离计算，增强垂直方向的吸附能力
       // 对于地面线段，主要考虑水平距离，垂直距离权重较小
-      const horizontalDistance = Math.abs(tree.x - px);
-      const verticalDistance = Math.abs(tree.y - py);
+      const horizontalDistance = Math.abs(treeCenterX - px);
+      const verticalDistance = Math.abs(treeCenterY - py);
 
       // 如果水平距离在合理范围内，则主要考虑垂直吸附
       let distance;
@@ -457,10 +466,11 @@ function initDragInteraction(container) {
     });
 
     if (closestPoint && finalSnap) {
-      tree.x = closestPoint.x;
-      tree.y = closestPoint.y;
-      treeEl.style.left = closestPoint.x + 'px';
-      treeEl.style.top = closestPoint.y + 'px';
+      // 将树木的视觉中心对齐到圆点，所以需要减去偏移量
+      tree.x = closestPoint.x - treeCenterOffsetX;
+      tree.y = closestPoint.y - treeCenterOffsetY;
+      treeEl.style.left = tree.x + 'px';
+      treeEl.style.top = tree.y + 'px';
       treeEl.style.transform = 'scale(1.1)';
       setTimeout(() => {
         treeEl.style.transform = 'scale(1)';
@@ -518,15 +528,18 @@ function initChatFeature(container, getInteractionState) {
   // 更新输入状态
   function updateChatInputState() {
     const hasPlacedTrees = getInteractionState().trees.length > 0;
-    const hasInput = chatInput.value.trim().length > 0;
-    sendButton.disabled = !hasPlacedTrees || !hasInput || isLoading;
+    const hasInput = chatInput && chatInput.value.trim().length > 0;
 
-    if (!hasPlacedTrees) {
-      sendButton.title = '请先放置一些树木';
-    } else if (!hasInput) {
-      sendButton.title = '请输入问题';
-    } else {
-      sendButton.title = '';
+    if (sendButton) {
+      sendButton.disabled = !hasPlacedTrees || !hasInput || isLoading;
+
+      if (!hasPlacedTrees) {
+        sendButton.title = '请先放置一些树木';
+      } else if (!hasInput) {
+        sendButton.title = '请输入问题';
+      } else {
+        sendButton.title = '';
+      }
     }
   }
 
@@ -557,16 +570,20 @@ function initChatFeature(container, getInteractionState) {
     messageEl.appendChild(textEl);
 
     // 清空欢迎消息
-    if (chatHistory.children.length === 1 && chatHistory.firstChild.style.textAlign === 'center') {
+    if (chatHistory && chatHistory.children.length === 1 && chatHistory.firstChild && chatHistory.firstChild.style.textAlign === 'center') {
       chatHistory.innerHTML = '';
     }
 
-    chatHistory.appendChild(messageEl);
-    chatHistory.scrollTop = chatHistory.scrollHeight;
+    if (chatHistory) {
+      chatHistory.appendChild(messageEl);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
   }
 
   // 发送消息到AI
   async function sendMessage(isNewConversation = false) {
+    if (!chatInput) return;
+
     const message = chatInput.value.trim();
     if (!message || isLoading) return;
 
@@ -578,7 +595,9 @@ function initChatFeature(container, getInteractionState) {
     chatInput.value = '';
 
     // 显示加载状态
-    loadingIndicator.style.display = 'block';
+    if (loadingIndicator) {
+      loadingIndicator.style.display = 'block';
+    }
 
     try {
       const data = await chatWithAI(
@@ -595,14 +614,18 @@ function initChatFeature(container, getInteractionState) {
       conversationHistory = data.updated_history;
 
       // 显示控制按钮
-      chatControls.style.display = 'flex';
+      if (chatControls) {
+        chatControls.style.display = 'flex';
+      }
 
     } catch (error) {
       console.error('AI请求失败:', error);
       addMessage('assistant', '抱歉，AI服务暂时不可用。请检查网络连接或稍后再试。', true);
     } finally {
       isLoading = false;
-      loadingIndicator.style.display = 'none';
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
       updateChatInputState();
     }
   }
@@ -611,16 +634,18 @@ function initChatFeature(container, getInteractionState) {
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   // 事件监听
-  chatInput.addEventListener('input', updateChatInputState);
-  chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
+  if (chatInput) {
+    chatInput.addEventListener('input', updateChatInputState);
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  }
 
   // 移动端优化：防止输入时页面缩放
-  if (isMobile) {
+  if (isMobile && chatInput) {
     chatInput.addEventListener('focus', () => {
       // 滚动到输入框位置
       setTimeout(() => {
@@ -629,32 +654,50 @@ function initChatFeature(container, getInteractionState) {
     });
 
     // 移动端发送按钮优化
-    sendButton.addEventListener('touchstart', (e) => {
-      e.preventDefault(); // 防止双重触发
-      if (!sendButton.disabled) {
-        sendMessage();
-      }
-    });
+    if (sendButton) {
+      sendButton.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // 防止双重触发
+        if (!sendButton.disabled) {
+          sendMessage();
+        }
+      });
+    }
   }
 
-  sendButton.addEventListener('click', () => sendMessage());
+  if (sendButton) {
+    sendButton.addEventListener('click', () => sendMessage());
+  }
 
-  continueButton.addEventListener('click', () => {
-    chatControls.style.display = 'none';
-    chatInput.focus();
+  if (continueButton) {
+    continueButton.addEventListener('click', () => {
+    if (chatControls) {
+      chatControls.style.display = 'none';
+    }
+    if (chatInput) {
+      chatInput.focus();
+    }
   });
+  }
 
-  newQuestionButton.addEventListener('click', () => {
+  if (newQuestionButton) {
+    newQuestionButton.addEventListener('click', () => {
     conversationHistory = [];
-    chatControls.style.display = 'none';
-    chatHistory.innerHTML = `
-      <div style="text-align: center; color: var(--muted); padding: 20px;">
-        <div style="font-size: 32px; margin-bottom: 8px;">🤖</div>
-        <p>对话已重置，请提出新的问题！</p>
-      </div>
-    `;
-    chatInput.focus();
+    if (chatControls) {
+      chatControls.style.display = 'none';
+    }
+    if (chatHistory) {
+      chatHistory.innerHTML = `
+        <div style="text-align: center; color: var(--muted); padding: 20px;">
+          <div style="font-size: 32px; margin-bottom: 8px;">🤖</div>
+          <p>对话已重置，请提出新的问题！</p>
+        </div>
+      `;
+    }
+    if (chatInput) {
+      chatInput.focus();
+    }
   });
+  }
 
   // 暴露更新函数给外部调用
   window.updateChatInputState = updateChatInputState;

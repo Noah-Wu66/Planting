@@ -5,10 +5,14 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import os
+import warnings
 from pathlib import Path
 from google import genai
 from google.genai import types
 import json
+
+# 过滤 Pydantic 关于 any 函数的警告
+warnings.filterwarnings("ignore", message=".*is not a Python type.*", category=UserWarning)
 
 app = FastAPI(title="植树问题AI学习平台", version="1.0.0")
 
