@@ -29,7 +29,6 @@ COPY api/ .
 # 复制前端静态文件到static目录
 COPY assets ./static/assets
 COPY index.html ./static/
-COPY README.md ./static/
 
 # 暴露端口（Zeabur会自动检测）
 EXPOSE 8080
