@@ -1,22 +1,31 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import os
+from pathlib import Path
 from google import genai
 from google.genai import types
 import json
 
-app = FastAPI(title="植树问题AI学习API", version="1.0.0")
+app = FastAPI(title="植树问题AI学习平台", version="1.0.0")
 
 # 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://your-domain.com"],  # 根据需要调整
+    allow_origins=["*"],  # Zeabur部署时允许所有来源
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 挂载静态文件
+static_dir = Path(__file__).parent / "static"
+if static_dir.exists():
+    app.mount("/assets", StaticFiles(directory=static_dir / "assets"), name="assets")
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # 初始化Gemini客户端
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "sk-your-api-key-here")
@@ -156,7 +165,35 @@ async def chat_with_ai(request: ChatRequest):
 @app.get("/api/health")
 async def health_check():
     """健康检查"""
-    return {"status": "healthy", "message": "植树问题AI学习API运行正常"}
+    return {"status": "healthy", "message": "植树问题AI学习平台运行正常"}
+
+# 前端路由处理
+@app.get("/")
+async def read_index():
+    """返回主页"""
+    index_file = static_dir / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return {"message": "植树问题AI学习平台", "status": "running"}
+
+@app.get("/{full_path:path}")
+async def catch_all(full_path: str):
+    """捕获所有前端路由，返回index.html用于SPA"""
+    # 如果是API路径，返回404
+    if full_path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="API endpoint not found")
+
+    # 检查是否是静态文件
+    static_file = static_dir / full_path
+    if static_file.exists() and static_file.is_file():
+        return FileResponse(static_file)
+
+    # 否则返回index.html（SPA路由）
+    index_file = static_dir / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+
+    return {"message": "植树问题AI学习平台", "status": "running"}
 
 if __name__ == "__main__":
     import uvicorn

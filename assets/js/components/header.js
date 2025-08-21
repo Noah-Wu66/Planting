@@ -2,7 +2,6 @@ import { themeManager } from '../shared/theme.js';
 
 const navLinks = [
   { href: '#/ai-learning', label: 'AI学习', emoji: '🤖' },
-  { href: '#/exercises', label: '练习与挑战', emoji: '🎯' },
 ];
 
 export function renderHeader(container){

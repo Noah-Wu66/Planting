@@ -22,20 +22,15 @@ if not exist ".env" (
 echo 安装Python依赖...
 pip install -r requirements.txt
 
-echo 启动后端服务...
-start "植树问题API服务" python main.py
+echo 启动服务...
+echo 注意：前后端已合并为单一服务
+start "植树问题学习平台" python main.py
 
 cd ..
-echo 等待后端服务启动...
-timeout /t 3 /nobreak >nul
-
-echo 启动前端服务...
-start "植树问题前端" python -m http.server 3000
 
 echo.
 echo 服务启动完成！
-echo 前端地址: http://localhost:3000
-echo 后端地址: http://localhost:8000
+echo 访问地址: http://localhost:8000
 echo API文档: http://localhost:8000/docs
 echo.
 echo 按任意键退出...

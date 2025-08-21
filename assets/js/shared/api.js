@@ -1,6 +1,6 @@
 // API配置和工具函数
 const API_CONFIG = {
-  baseURL: 'http://localhost:8000',
+  baseURL: '', // 使用相对路径，因为前后端在同一服务
   timeout: 30000
 };
 

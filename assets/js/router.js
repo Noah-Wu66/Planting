@@ -1,11 +1,9 @@
 import { AILearning } from './pages/ai-learning.js';
-import { Exercises } from './pages/exercises.js';
 
 const routes = {
   '': AILearning,
   '#/': AILearning,
   '#/ai-learning': AILearning,
-  '#/exercises': Exercises,
 };
 
 function render(Component) {

@@ -23,17 +23,14 @@
 
 ## 技术架构
 
-### 前端
-- **纯JavaScript**: 无框架依赖，轻量级实现
+### 全栈应用
+- **前端**: 纯JavaScript，无框架依赖，轻量级实现
 - **SVG绘图**: 精确的图形渲染和交互
 - **拖拽API**: 原生HTML5拖拽功能
-- **响应式设计**: 适配各种屏幕尺寸
-
-### 后端
-- **FastAPI**: 高性能Python Web框架
-- **Gemini AI**: Google最新的AI模型集成
-- **RESTful API**: 标准化的接口设计
-- **CORS支持**: 跨域请求处理
+- **后端**: FastAPI + Python，高性能Web框架
+- **AI集成**: Gemini 2.5 Flash模型
+- **静态文件服务**: FastAPI内置静态文件服务
+- **单服务部署**: 前后端合并，适合Zeabur等平台
 
 ## 快速开始
 
@@ -41,7 +38,7 @@
 
 确保已安装Python 3.8+和pip。
 
-### 2. 后端设置
+### 2. 本地开发
 
 ```bash
 # 进入API目录
@@ -54,29 +51,24 @@ pip install -r requirements.txt
 cp .env.example .env
 # 编辑 .env 文件，设置你的 GEMINI_API_KEY
 
-# 启动后端服务
+# 启动服务（前后端合并）
 python main.py
 ```
 
-后端服务将在 `http://localhost:8000` 启动。
+服务将在 `http://localhost:8000` 启动，包含前端界面和API。
 
-### 3. 前端设置
-
-```bash
-# 在项目根目录启动静态文件服务器
-python -m http.server 3000
-
-# 或使用Node.js
-npx serve . -p 3000
-```
-
-前端将在 `http://localhost:3000` 可访问。
-
-### 4. 获取Gemini API密钥
+### 3. 获取Gemini API密钥
 
 1. 访问 [AiHubMix](https://aihubmix.com)
 2. 注册账号并获取API密钥
 3. 将密钥配置到 `api/.env` 文件中
+
+### 4. Zeabur部署
+
+1. 将代码推送到GitHub仓库
+2. 在Zeabur中连接GitHub仓库
+3. 设置环境变量 `GEMINI_API_KEY`
+4. Zeabur会自动检测Dockerfile并部署
 
 ## 使用指南
 
@@ -130,14 +122,24 @@ npx serve . -p 3000
 
 ## 部署说明
 
-### 开发环境
-- 前端: 静态文件服务器 (端口3000)
-- 后端: FastAPI开发服务器 (端口8000)
+### 本地开发
+- 单一服务: FastAPI提供前后端服务 (端口8000)
+- 静态文件: 通过FastAPI StaticFiles中间件提供
 
-### 生产环境
-- 前端: Nginx/Apache静态文件托管
-- 后端: Gunicorn + FastAPI
-- 建议使用Docker容器化部署
+### Zeabur部署
+- 自动检测: Zeabur自动识别Dockerfile
+- 环境变量: 在Zeabur控制台设置GEMINI_API_KEY
+- 域名绑定: 支持自定义域名
+- 自动HTTPS: Zeabur提供免费SSL证书
+
+### Docker部署
+```bash
+# 构建镜像
+docker build -t planting-app .
+
+# 运行容器
+docker run -p 8000:8000 -e GEMINI_API_KEY=your-key planting-app
+```
 
 ## 贡献指南
 

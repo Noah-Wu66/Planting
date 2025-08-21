@@ -8,7 +8,6 @@ export function AILearning(){
     <div class="hero">
       <div class="mobile-cta" role="navigation" aria-label="快速入口（移动端）">
         <a class="btn primary" href="#/ai-learning">🤖 AI学习</a>
-        <a class="btn" href="#/exercises">🎯 练习与挑战</a>
       </div>
       <h1>🤖 AI智能学习助手</h1>
       <p>通过拖拽树木到地面上，与AI助手互动学习植树问题的奥秘。</p>
