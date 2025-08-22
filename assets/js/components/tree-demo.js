@@ -129,12 +129,6 @@ export class TreeDemo {
       case 'circle':
         positions = this.generateCirclePoints(mode);
         break;
-      case 'triangle':
-        positions = this.generateTrianglePoints(mode);
-        break;
-      case 'square':
-        positions = this.generateSquarePoints(mode);
-        break;
       default:
         positions = this.generateLinePoints(mode);
     }
@@ -186,38 +180,6 @@ export class TreeDemo {
         circle.setAttribute('fill', 'none');
         circle.classList.add('ground-shape');
         this.groundSvg.appendChild(circle);
-        break;
-        
-      case 'triangle':
-        this.groundLine.style.display = 'none';
-        const triangle = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        const trianglePoints = [
-          `${centerX},${centerY - size * 0.8}`,
-          `${centerX - size * 0.8},${centerY + size * 0.4}`,
-          `${centerX + size * 0.8},${centerY + size * 0.4}`
-        ].join(' ');
-        triangle.setAttribute('points', trianglePoints);
-        triangle.setAttribute('stroke', '#2563eb');
-        triangle.setAttribute('stroke-width', '6');
-        triangle.setAttribute('stroke-dasharray', '8,4');
-        triangle.setAttribute('fill', 'none');
-        triangle.classList.add('ground-shape');
-        this.groundSvg.appendChild(triangle);
-        break;
-        
-      case 'square':
-        this.groundLine.style.display = 'none';
-        const square = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        square.setAttribute('x', centerX - size);
-        square.setAttribute('y', centerY - size);
-        square.setAttribute('width', size * 2);
-        square.setAttribute('height', size * 2);
-        square.setAttribute('stroke', '#2563eb');
-        square.setAttribute('stroke-width', '6');
-        square.setAttribute('stroke-dasharray', '8,4');
-        square.setAttribute('fill', 'none');
-        square.classList.add('ground-shape');
-        this.groundSvg.appendChild(square);
         break;
     }
   }
@@ -278,8 +240,7 @@ export class TreeDemo {
     return points;
   }
   
-  generateTrianglePoints(mode) {
-    // 闭合三角形：树数 = ⌊(3×length)/interval⌋，按像素周长等距分布
+  /* removed */ generateTrianglePoints(mode) {
     const centerX = (this.groundConfig.startX + this.groundConfig.endX) / 2;
     const centerY = this.groundConfig.startY;
     const size = this.groundConfig.shapeSize ?? Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8;
@@ -321,8 +282,7 @@ export class TreeDemo {
     return points;
   }
   
-  generateSquarePoints(mode) {
-    // 闭合正方形：树数 = ⌊(4×length)/interval⌋，沿像素周长等距分布
+  /* removed */ generateSquarePoints(mode) {
     const centerX = (this.groundConfig.startX + this.groundConfig.endX) / 2;
     const centerY = this.groundConfig.startY;
     const size = this.groundConfig.shapeSize ?? Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8;
@@ -435,12 +395,8 @@ export class TreeDemo {
     } else if (shape === 'circle') {
       const treeCount = Math.floor(length / interval);
       steps.push(`圆形为闭合图形：树的棵数 = 周长 ÷ 间距 = ${length} ÷ ${interval} = ${treeCount}棵`);
-    } else if (shape === 'triangle') {
-      const treeCount = Math.floor((length * 3) / interval);
-      steps.push(`三角形为闭合图形：树的棵数 = 周长 ÷ 间距 = ${length} × 3 ÷ ${interval} = ${treeCount}棵`);
-    } else if (shape === 'square') {
-      const treeCount = Math.floor((length * 4) / interval);
-      steps.push(`正方形为闭合图形：树的棵数 = 周长 ÷ 间距 = ${length} × 4 ÷ ${interval} = ${treeCount}棵`);
+    } else if (shape === 'triangle' || shape === 'square') {
+      // 已移除三角形/正方形
     }
     
     return steps;
@@ -459,9 +415,7 @@ export class TreeDemo {
   getShapeText(shape) {
     const shapeMap = {
       'line': '直线',
-      'circle': '圆形',
-      'triangle': '三角形',
-      'square': '正方形'
+      'circle': '圆形'
     };
     return shapeMap[shape] || shape;
   }

@@ -39,8 +39,6 @@ export function AILearning(){
           <select id="shape-mode">
             <option value="line">直线</option>
             <option value="circle">圆形</option>
-            <option value="triangle">三角形</option>
-            <option value="square">正方形</option>
           </select>
         </div>
       </div>
@@ -142,7 +140,7 @@ function initDemoInteraction(container) {
     const lengths = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
     const intervals = [5, 10, 15, 20, 25];
     const modes = ['both', 'none', 'one', 'circle'];
-    const shapes = ['line', 'circle', 'triangle', 'square'];
+    const shapes = ['line', 'circle'];
 
     const randomLength = lengths[Math.floor(Math.random() * lengths.length)];
     const randomInterval = intervals[Math.floor(Math.random() * intervals.length)];
@@ -168,15 +166,14 @@ function initDemoInteraction(container) {
 
     // 闭合图形可行性检查：周长必须能被间距整除
     const shapeForCheck = container.querySelector('#shape-mode').value;
-    const isClosedShape = (shapeForCheck === 'circle' || shapeForCheck === 'triangle' || shapeForCheck === 'square');
+    const isClosedShape = (shapeForCheck === 'circle');
     if (isClosedShape) {
-      const multiplier = shapeForCheck === 'circle' ? 1 : (shapeForCheck === 'triangle' ? 3 : 4);
-      const perim = groundConfig.length * multiplier;
+      const perim = groundConfig.length;
       const feasible = Number.isFinite(perim) && groundConfig.interval > 0 && Number.isInteger(perim / groundConfig.interval);
       const hintEl = container.querySelector('#demo-hint');
       if (!feasible) {
         if (hintEl) {
-          hintEl.textContent = `⚠️ 当前参数无法等距种植（要求：${multiplier === 1 ? '周长' : '周长'}可被间距整除）。请调整长度或间距。`;
+          hintEl.textContent = '⚠️ 当前参数无法等距种植（要求：周长可被间距整除）。请调整长度或间距。';
         }
         updateTreeDisplay();
         return; // 不生成点
@@ -241,7 +238,7 @@ function initDemoInteraction(container) {
   function calculateCorrectTreePositions() {
     const shape = container.querySelector('#shape-mode').value;
     // 闭合图形不使用种树模式
-    const isClosed = (shape === 'circle' || shape === 'triangle' || shape === 'square');
+    const isClosed = (shape === 'circle');
     const mode = isClosed ? 'both' : container.querySelector('#tree-mode').value;
     let positions = [];
 
@@ -253,12 +250,7 @@ function initDemoInteraction(container) {
       case 'circle':
         positions = generateCirclePoints(mode);
         break;
-      case 'triangle':
-        positions = generateTrianglePoints(mode);
-        break;
-      case 'square':
-        positions = generateSquarePoints(mode);
-        break;
+      
       default:
         positions = generateLinePoints(mode);
     }
@@ -319,7 +311,7 @@ function initDemoInteraction(container) {
     // 根据形状隐藏/显示“种树模式”
     const treeModeContainer = container.querySelector('#tree-mode')?.closest('.input');
     if (treeModeContainer) {
-      if (shape === 'circle' || shape === 'triangle' || shape === 'square') {
+      if (shape === 'circle') {
         treeModeContainer.style.display = 'none';
       } else {
         treeModeContainer.style.display = '';
@@ -372,39 +364,7 @@ function initDemoInteraction(container) {
         groundSvg.appendChild(circle);
         break;
 
-      case 'triangle':
-        // 三角形模式
-        groundLine.style.display = 'none';
-        const triangle = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        const trianglePoints = [
-          `${centerX},${centerY - size * 0.8}`,
-          `${centerX - size * 0.8},${centerY + size * 0.4}`,
-          `${centerX + size * 0.8},${centerY + size * 0.4}`
-        ].join(' ');
-        triangle.setAttribute('points', trianglePoints);
-        triangle.setAttribute('stroke', '#2563eb');
-        triangle.setAttribute('stroke-width', '6');
-        triangle.setAttribute('stroke-dasharray', '8,4');
-        triangle.setAttribute('fill', 'none');
-        triangle.classList.add('ground-shape');
-        groundSvg.appendChild(triangle);
-        break;
-
-      case 'square':
-        // 正方形模式
-        groundLine.style.display = 'none';
-        const square = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        square.setAttribute('x', centerX - size);
-        square.setAttribute('y', centerY - size);
-        square.setAttribute('width', size * 2);
-        square.setAttribute('height', size * 2);
-        square.setAttribute('stroke', '#2563eb');
-        square.setAttribute('stroke-width', '6');
-        square.setAttribute('stroke-dasharray', '8,4');
-        square.setAttribute('fill', 'none');
-        square.classList.add('ground-shape');
-        groundSvg.appendChild(square);
-        break;
+      
     }
   }
 
@@ -416,10 +376,9 @@ function initDemoInteraction(container) {
     const shape = groundConfig.shape;
 
     // 闭合图形整除性检查，不满足则不显示吸附点
-    const isClosedShape = (shape === 'circle' || shape === 'triangle' || shape === 'square');
+    const isClosedShape = (shape === 'circle');
     if (isClosedShape) {
-      const multiplier = shape === 'circle' ? 1 : (shape === 'triangle' ? 3 : 4);
-      const perim = groundConfig.length * multiplier;
+      const perim = groundConfig.length;
       const feasible = Number.isFinite(perim) && groundConfig.interval > 0 && Number.isInteger(perim / groundConfig.interval);
       if (!feasible) {
         return [];
@@ -442,12 +401,7 @@ function initDemoInteraction(container) {
       case 'circle':
         points = generateCirclePoints(mode);
         break;
-      case 'triangle':
-        points = generateTrianglePoints(mode);
-        break;
-      case 'square':
-        points = generateSquarePoints(mode);
-        break;
+      
       default:
         points = generateLinePoints(mode);
     }
@@ -534,92 +488,7 @@ function initDemoInteraction(container) {
     return points;
   }
 
-  // 生成三角形种植点
-  function generateTrianglePoints(mode) {
-    // 闭合三角形：树数=⌊(3×length)/interval⌋，沿像素周长等距分布
-    const centerX = (groundConfig.startX + groundConfig.endX) / 2;
-    const centerY = groundConfig.startY;
-    const size = groundConfig.shapeSize ?? Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
-
-    const vertices = [
-      { x: centerX, y: centerY - size * 0.8 },
-      { x: centerX - size * 0.8, y: centerY + size * 0.4 },
-      { x: centerX + size * 0.8, y: centerY + size * 0.4 }
-    ];
-    const edges = [
-      { start: vertices[0], end: vertices[1] },
-      { start: vertices[1], end: vertices[2] },
-      { start: vertices[2], end: vertices[0] },
-    ];
-    const edgeLens = edges.map(e => Math.hypot(e.end.x - e.start.x, e.end.y - e.start.y));
-    const totalPx = edgeLens.reduce((a, b) => a + b, 0);
-
-    const treeCount = Math.max(3, Math.floor((groundConfig.length * 3) / groundConfig.interval));
-    if (treeCount <= 0 || totalPx <= 0) return [];
-
-    const stepPx = totalPx / treeCount;
-    let points = [];
-
-    for (let i = 0; i < treeCount; i++) {
-      let rem = i * stepPx;
-      let edgeIndex = 0;
-      while (edgeIndex < edges.length - 1 && rem >= edgeLens[edgeIndex]) {
-        rem -= edgeLens[edgeIndex];
-        edgeIndex++;
-      }
-      const e = edges[edgeIndex % edges.length];
-      const len = edgeLens[edgeIndex % edges.length];
-      const t = len === 0 ? 0 : rem / len;
-      points.push({ x: e.start.x + (e.end.x - e.start.x) * t, y: e.start.y + (e.end.y - e.start.y) * t });
-    }
-
-    return points;
-  }
-
-  // 生成正方形种植点（闭合图形：树数=⌊周长/间距⌋）
-  function generateSquarePoints(mode) {
-    const centerX = (groundConfig.startX + groundConfig.endX) / 2;
-    const centerY = groundConfig.startY;
-    const size = groundConfig.shapeSize ?? Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
-
-    // 四个顶点
-    const vertices = [
-      { x: centerX - size, y: centerY - size },
-      { x: centerX + size, y: centerY - size },
-      { x: centerX + size, y: centerY + size },
-      { x: centerX - size, y: centerY + size }
-    ];
-
-    const edges = [
-      { start: vertices[0], end: vertices[1] },
-      { start: vertices[1], end: vertices[2] },
-      { start: vertices[2], end: vertices[3] },
-      { start: vertices[3], end: vertices[0] },
-    ];
-    const edgeLens = edges.map(e => Math.hypot(e.end.x - e.start.x, e.end.y - e.start.y));
-    const totalPx = edgeLens.reduce((a, b) => a + b, 0);
-
-    const treeCount = Math.max(4, Math.floor((groundConfig.length * 4) / groundConfig.interval));
-    if (treeCount <= 0 || totalPx <= 0) return [];
-
-    const stepPx = totalPx / treeCount;
-    let points = [];
-
-    for (let i = 0; i < treeCount; i++) {
-      let rem = i * stepPx;
-      let edgeIndex = 0;
-      while (edgeIndex < edges.length && rem > edgeLens[edgeIndex]) {
-        rem -= edgeLens[edgeIndex];
-        edgeIndex++;
-      }
-      const e = edges[edgeIndex % edges.length];
-      const len = edgeLens[edgeIndex % edges.length];
-      const t = len === 0 ? 0 : rem / len;
-      points.push({ x: e.start.x + (e.end.x - e.start.x) * t, y: e.start.y + (e.end.y - e.start.y) * t });
-    }
-
-    return points;
-  }
+  // 已移除三角形与正方形相关函数
 
   // 更新测量标注
   function updateMeasurements() {

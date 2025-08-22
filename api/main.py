@@ -59,7 +59,7 @@ class GroundConfig(BaseModel):
 class InteractionState(BaseModel):
     ground: GroundConfig
     tree_mode: str  # 'both', 'none', 'one', 'circle'
-    shape_mode: str = 'line'  # 'line', 'circle', 'triangle', 'square'
+    shape_mode: str = 'line'  # 'line', 'circle'
     # 为了与旧版前端兼容，trees 可选且默认空列表；后端不再使用该字段参与AI提示
     trees: Optional[List[TreePosition]] = Field(default_factory=list)
 
@@ -134,11 +134,11 @@ def calculate_tree_count(length: float, interval: float, mode: str, shape: str) 
         # 圆形种植（环形），若除不尽提示由前端控制，这里返回向下取整
         return int(length / interval)
     elif shape == "triangle":
-        # 三角形种植（周长 = 3×length）
-        return int((length * 3) / interval)
+        # 已移除，容错处理：按圆形
+        return int(length / interval)
     elif shape == "square":
-        # 正方形种植（周长 = 4×length）
-        return int((length * 4) / interval)
+        # 已移除，容错处理：按圆形
+        return int(length / interval)
     else:
         # 默认按直线两端种植计算
         return int(length / interval) + 1
@@ -166,12 +166,11 @@ def generate_solving_steps(length: float, interval: float, mode: str, shape: str
         steps.append(f"圆形种植公式：棵数 = 周长 ÷ 间距")
         steps.append(f"计算：{length} ÷ {interval} = {int(length/interval)}棵")
     elif shape in ["triangle", "square"]:
-        shape_name = "三角形" if shape == "triangle" else "正方形"
-        mul = 3 if shape == "triangle" else 4
-        steps.append(f"这是一道{shape_name}种植问题")
-        steps.append(f"已知：{shape_name}周长{length*mul}米，间距{interval}米")
-        steps.append(f"{shape_name}种植公式：棵数 = 周长 ÷ 间距")
-        steps.append(f"计算：{length*mul} ÷ {interval} = {int((length*mul)/interval)}棵")
+        # 已不支持三角形和正方形，在后端保持容错为圆形讲解
+        steps.append(f"这是一道圆形种植问题（已统一为圆形）")
+        steps.append(f"已知：圆周长{length}米，间距{interval}米")
+        steps.append(f"圆形种植公式：棵数 = 周长 ÷ 间距")
+        steps.append(f"计算：{length} ÷ {interval} = {int(length/interval)}棵")
 
     return steps
 
@@ -192,9 +191,7 @@ def generate_system_prompt(interaction_state: InteractionState) -> str:
     # 图形模式说明
     shape_descriptions = {
         'line': '直线种植',
-        'circle': '圆形种植',
-        'triangle': '三角形种植',
-        'square': '正方形种植'
+        'circle': '圆形种植'
     }
 
     prompt = f"""你是一个专门教授小学五年级植树问题的AI助手。
@@ -274,15 +271,14 @@ def generate_diverse_parameters(question_type: str, question_number: int) -> dic
         }
 
     elif question_type == "shape_problem":
-        # 图形种植问题
-        lengths = [24, 30, 36, 42]  # 便于计算周长的数值
+        # 图形种植问题（仅圆形）
+        lengths = [24, 30, 36, 42]
         intervals = [3, 4, 6]
-        shapes = ["circle", "triangle", "square"]
         return {
             "length": random.choice(lengths),
             "interval": random.choice(intervals),
-            "mode": "circle",  # 图形种植通常是环形
-            "shape": random.choice(shapes)
+            "mode": "circle",
+            "shape": "circle"
         }
 
     elif question_type == "comprehensive":
@@ -290,7 +286,7 @@ def generate_diverse_parameters(question_type: str, question_number: int) -> dic
         lengths = [120, 140, 160, 180]
         intervals = [8, 10, 12, 15]
         all_modes = ["both", "none", "one", "circle"]
-        all_shapes = ["line", "circle", "triangle", "square"]
+        all_shapes = ["line", "circle"]
 
         # 确保模式和图形的合理搭配
         shape = random.choice(all_shapes)
@@ -323,9 +319,7 @@ def get_shape_description(shape: str) -> str:
     """获取图形模式的中文描述"""
     descriptions = {
         "line": "直线排列",
-        "circle": "圆形排列",
-        "triangle": "三角形排列",
-        "square": "正方形排列"
+        "circle": "圆形排列"
     }
     return descriptions.get(shape, shape)
 
@@ -371,7 +365,7 @@ async def generate_practice_question(request: QuestionRequest):
 - basic_line: 基础直线种植问题
 - basic_line_both: 两端都种的直线问题
 - line_advanced: 进阶直线问题（一端种/两端不种）
-- shape_problem: 图形种植问题（圆形/三角形/正方形）
+- shape_problem: 图形种植问题（圆形）
 - comprehensive: 综合应用问题
 
 请生成一道符合要求的练习题，只返回题目描述文字，不要包含答案。
@@ -740,9 +734,7 @@ def generate_practice_system_prompt(interaction_state: InteractionState) -> str:
     # 分析图形模式
     shape_descriptions = {
         'line': '直线种植',
-        'circle': '圆形种植',
-        'triangle': '三角形种植',
-        'square': '正方形种植'
+        'circle': '圆形种植'
     }
 
     prompt = f"""你是一个专门教授小学五年级植树问题的AI练习助手。

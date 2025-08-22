@@ -159,7 +159,7 @@ function initPracticeFeature(container) {
       let questionData = await mockGenerateQuestion(questionNumber);
       // 题目有效性过滤（闭合图形整除；直线-两端都种也需整除）
       const shape = questionData.parameters.shape;
-      const isClosed = (shape === 'circle' || shape === 'triangle' || shape === 'square');
+      const isClosed = (shape === 'circle');
       const needLineDivisible = (shape === 'line' && questionData.parameters.mode === 'both');
       function ok(q){
         const s = q.parameters.shape;
@@ -167,8 +167,7 @@ function initPracticeFeature(container) {
           if (q.parameters.mode === 'both') return Number.isInteger(q.parameters.length / q.parameters.interval);
           return true;
         }
-        const m = s === 'circle' ? 1 : (s === 'triangle' ? 3 : 4);
-        return Number.isInteger((q.parameters.length * m) / q.parameters.interval);
+        return Number.isInteger(q.parameters.length / q.parameters.interval);
       }
       if ((isClosed || needLineDivisible) && !ok(questionData)) {
         let attempts = 0;
@@ -192,8 +191,8 @@ function initPracticeFeature(container) {
   async function mockGenerateQuestion(questionNumber) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // 随机生成不同图形与参数，并尽量保证合理范围
-    const shapes = ['line', 'circle', 'triangle', 'square'];
+    // 随机生成不同图形与参数，并尽量保证合理范围（仅直线/圆形）
+    const shapes = ['line', 'circle'];
     // 为了早期阶段题目更友好，前两题倾向于直线，两端都种
     let shape = (questionNumber <= 2) ? 'line' : shapes[Math.floor(Math.random() * shapes.length)];
     const baseLen = 80 + (questionNumber * 10);
@@ -202,14 +201,13 @@ function initPracticeFeature(container) {
     let interval = intervals[Math.floor(Math.random() * intervals.length)];
     let mode = shape === 'line' ? 'both' : 'both';
 
-    // 对闭合图形，尽量挑选可整除的组合（不保证 100%，generateQuestion 中还有二次过滤）
+    // 对圆形，尽量挑选可整除的组合（不保证 100%，generateQuestion 中还有二次过滤）
     if (shape !== 'line') {
-      const multiplier = shape === 'circle' ? 1 : (shape === 'triangle' ? 3 : 4);
       // 尝试若干次找到整除组合
       for (let i = 0; i < 10; i++) {
         length = 60 + Math.floor(Math.random() * 121); // 60~180
         interval = intervals[Math.floor(Math.random() * intervals.length)];
-        if (Number.isInteger((length * multiplier) / interval)) break;
+        if (Number.isInteger(length / interval)) break;
       }
     }
     // 直线且两端都种：也确保长度能被间距整除
@@ -222,15 +220,13 @@ function initPracticeFeature(container) {
     }
 
     const questionTextMap = {
-      line: `在一条${length}米长的道路两边种树，每隔${interval}米种一棵，两端都要种树。请问一共需要种多少棵树？`,
-      circle: `在一个周长为${length}米的圆形花坛边缘等间距${interval}米种树，请问需要多少棵树？`,
-      triangle: `在一个周长为${length * 3}米的三角形围栏上，每隔${interval}米种一棵树，共需要多少棵？`,
-      square: `在一个周长为${length * 4}米的正方形广场边缘，每隔${interval}米种一棵树，共需要多少棵？`
+      line: `在一条${length}米长的道路两边种树，每隔${interval}米种一棵，两端都要种树。请问一共需要多少棵树？`,
+      circle: `在一个周长为${length}米的圆形花坛边缘等间距${interval}米种树，请问需要多少棵树？`
     };
 
     const expectedAnswer = (shape === 'line')
       ? (Math.floor(length / interval) * 2 + 2)
-      : Math.floor((length * (shape === 'circle' ? 1 : (shape === 'triangle' ? 3 : 4))) / interval);
+      : Math.floor(length / interval);
 
     return {
       id: `q${questionNumber}_${Date.now()}`,
@@ -409,9 +405,7 @@ function initPracticeFeature(container) {
   function getShapeText(shape) {
     const shapeMap = {
       'line': '直线',
-      'circle': '圆形',
-      'triangle': '三角形', 
-      'square': '正方形'
+      'circle': '圆形'
     };
     return shapeMap[shape] || shape;
   }
