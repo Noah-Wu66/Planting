@@ -345,6 +345,7 @@ function initDemoInteraction(container) {
     // 使图形尽量占满可用高度，同时与水平长度保持一致比例
     const verticalLimit = (dragArea.clientHeight - 40) / 2; // 距离上下边各留 20px
     const size = Math.min((groundConfig.endX - groundConfig.startX) / 2, verticalLimit) * 0.9;
+    groundConfig.shapeSize = size; // 统一供点生成使用
 
     switch (groundConfig.shape) {
       case 'line':
@@ -518,7 +519,7 @@ function initDemoInteraction(container) {
   function generateCirclePoints(mode) {
     const centerX = (groundConfig.startX + groundConfig.endX) / 2;
     const centerY = groundConfig.startY;
-    const radius = Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
+    const radius = groundConfig.shapeSize ?? Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
 
     const numPoints = Math.max(3, Math.floor(groundConfig.length / groundConfig.interval));
 
@@ -538,7 +539,7 @@ function initDemoInteraction(container) {
     // 闭合三角形：树数=⌊(3×length)/interval⌋，沿像素周长等距分布
     const centerX = (groundConfig.startX + groundConfig.endX) / 2;
     const centerY = groundConfig.startY;
-    const size = Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
+    const size = groundConfig.shapeSize ?? Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
 
     const vertices = [
       { x: centerX, y: centerY - size * 0.8 },
@@ -579,7 +580,7 @@ function initDemoInteraction(container) {
   function generateSquarePoints(mode) {
     const centerX = (groundConfig.startX + groundConfig.endX) / 2;
     const centerY = groundConfig.startY;
-    const size = Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
+    const size = groundConfig.shapeSize ?? Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
 
     // 四个顶点
     const vertices = [

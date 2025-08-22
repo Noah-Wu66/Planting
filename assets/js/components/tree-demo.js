@@ -150,6 +150,7 @@ export class TreeDemo {
     // 使用可用高度限制，放大形状，减少树重叠
     const verticalLimit = (this.demoArea.clientHeight - 40) / 2;
     const size = Math.min(pixelLength / 2, verticalLimit) * 0.9;
+    this.groundConfig.shapeSize = size; // 统一供点生成使用
     
     // 清除现有图形
     const existingShapes = this.groundSvg.querySelectorAll('.ground-shape');
@@ -262,7 +263,7 @@ export class TreeDemo {
   generateCirclePoints(mode) {
     const centerX = (this.groundConfig.startX + this.groundConfig.endX) / 2;
     const centerY = this.groundConfig.startY;
-    const radius = Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8; // 与地面图形一致
+    const radius = this.groundConfig.shapeSize ?? Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8; // 与地面图形一致
     // 按数学关系计算：棵数 = 周长 ÷ 间距
     const numPoints = Math.max(3, Math.floor(this.parameters.length / this.parameters.interval));
 
@@ -281,7 +282,7 @@ export class TreeDemo {
     // 闭合三角形：树数 = ⌊(3×length)/interval⌋，按像素周长等距分布
     const centerX = (this.groundConfig.startX + this.groundConfig.endX) / 2;
     const centerY = this.groundConfig.startY;
-    const size = Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8;
+    const size = this.groundConfig.shapeSize ?? Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8;
 
     const vertices = [
       { x: centerX, y: centerY - size * 0.8 },
@@ -324,7 +325,7 @@ export class TreeDemo {
     // 闭合正方形：树数 = ⌊(4×length)/interval⌋，沿像素周长等距分布
     const centerX = (this.groundConfig.startX + this.groundConfig.endX) / 2;
     const centerY = this.groundConfig.startY;
-    const size = Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8;
+    const size = this.groundConfig.shapeSize ?? Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8;
 
     const vertices = [
       { x: centerX - size, y: centerY - size },
