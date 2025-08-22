@@ -261,17 +261,14 @@ export class TreeDemo {
     const centerX = (this.groundConfig.startX + this.groundConfig.endX) / 2;
     const centerY = this.groundConfig.startY;
     const radius = Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8; // 与地面图形一致
-
-    // 根据实际绘制的像素周长与题目中的米周长（π×直径）换算像素间距
-    const circumferencePx = 2 * Math.PI * radius;
-    const circumferenceMeters = Math.PI * this.parameters.length; // length 作为直径
-    const pxPerMeter = circumferencePx / Math.max(1e-6, circumferenceMeters);
-    const pxInterval = Math.max(1, this.parameters.interval * pxPerMeter);
-    const numPoints = Math.max(3, Math.floor(circumferencePx / pxInterval));
+    const scale = (this.groundConfig.endX - this.groundConfig.startX) / this.parameters.length; // 像素/米
+    const pxInterval = Math.max(1, this.parameters.interval * scale);
+    const circumference = 2 * Math.PI * radius;
+    const numPoints = Math.max(3, Math.floor(circumference / pxInterval));
 
     let points = [];
     for (let i = 0; i < numPoints; i++) {
-      const angle = (i / Math.max(1, numPoints)) * 2 * Math.PI;
+      const angle = (i / numPoints) * 2 * Math.PI;
       const x = centerX + radius * Math.cos(angle);
       const y = centerY + radius * Math.sin(angle);
       points.push({ x, y });
@@ -281,60 +278,51 @@ export class TreeDemo {
   }
   
   generateTrianglePoints(mode) {
+    // 目标：按“周长 ÷ 间距”的点数，沿三角形三条边等距分布（与显示尺寸无关，数量正确）
     const centerX = (this.groundConfig.startX + this.groundConfig.endX) / 2;
     const centerY = this.groundConfig.startY;
     const size = Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8;
 
-    // 三角形三个顶点（与地面图形一致）
+    // 等边三角形顶点（与地面图形一致）
     const vertices = [
       { x: centerX, y: centerY - size * 0.8 },
       { x: centerX - size * 0.8, y: centerY + size * 0.4 },
       { x: centerX + size * 0.8, y: centerY + size * 0.4 }
     ];
 
-    // 以“图形实际像素周长 / 题目米周长(=3×length)”得到像素/米
-    const edgeLengths = [0,1,2].map(i => {
-      const a = vertices[i], b = vertices[(i+1)%3];
-      return Math.hypot(b.x - a.x, b.y - a.y);
-    });
-    const perimeterPx = edgeLengths.reduce((a,b)=>a+b,0);
-    const perimeterMeters = 3 * this.parameters.length;
-    const pxPerMeter = perimeterPx / Math.max(1e-6, perimeterMeters);
-    const pxInterval = Math.max(1, this.parameters.interval * pxPerMeter);
+    // 像素边长与总像素周长
+    const edges = [
+      { start: vertices[0], end: vertices[1] },
+      { start: vertices[1], end: vertices[2] },
+      { start: vertices[2], end: vertices[0] }
+    ];
+    const edgeLens = edges.map(e => Math.hypot(e.end.x - e.start.x, e.end.y - e.start.y));
+    const totalPx = edgeLens.reduce((a, b) => a + b, 0);
 
+    // 以“米”为准计算需要的点数（与显示尺寸解耦）
+    const perimeterMeters = this.parameters.length * 3;
+    const treeCount = Math.max(3, Math.floor(perimeterMeters / this.parameters.interval));
+    if (treeCount <= 0 || totalPx <= 0) return [];
+
+    const stepPx = totalPx / treeCount;
+    let acc = 0;
     let points = [];
 
-    const placeAlongEdge = (start, end, includeStart, includeEnd) => {
-      const dx = end.x - start.x; const dy = end.y - start.y; const L = Math.hypot(dx, dy);
-      let s = includeStart ? 0 : pxInterval;
-      for (; s < L - 1e-6; s += pxInterval) {
-        const t = s / L; points.push({ x: start.x + dx*t, y: start.y + dy*t });
+    for (let i = 0; i < treeCount; i++) {
+      const target = i * stepPx;
+      // 找到 target 落在哪条边上
+      let rem = target;
+      let edgeIndex = 0;
+      while (edgeIndex < edges.length && rem > edgeLens[edgeIndex]) {
+        rem -= edgeLens[edgeIndex];
+        edgeIndex++;
       }
-      if (includeEnd) {
-        const x = end.x, y = end.y; const last = points[points.length-1];
-        if (!last || Math.hypot(last.x-x,last.y-y) > 0.5) points.push({ x, y });
-      }
-    };
-
-    if (mode === 'circle') {
-      // 环形：三边整圈均匀分布，避免顶点重复
-      for (let i = 0; i < 3; i++) {
-        const start = vertices[i], end = vertices[(i+1)%3];
-        const dx = end.x - start.x, dy = end.y - start.y; const L = Math.hypot(dx, dy);
-        for (let s = 0; s < L; s += pxInterval) {
-          const t = s / L; const x = start.x + dx*t, y = start.y + dy*t;
-          const last = points[points.length-1];
-          if (!last || Math.hypot(last.x-x,last.y-y) > 0.5) points.push({ x, y });
-        }
-      }
-    } else {
-      // 非环形：端点包含规则
-      for (let i = 0; i < 3; i++) {
-        const start = vertices[i], end = vertices[(i+1)%3];
-        const includeStart = (i === 0) && (mode === 'both' || mode === 'one');
-        const includeEnd = (mode === 'both');
-        placeAlongEdge(start, end, includeStart, includeEnd);
-      }
+      const e = edges[edgeIndex % edges.length];
+      const len = edgeLens[edgeIndex % edges.length];
+      const t = len === 0 ? 0 : rem / len;
+      const x = e.start.x + (e.end.x - e.start.x) * t;
+      const y = e.start.y + (e.end.y - e.start.y) * t;
+      points.push({ x, y });
     }
 
     return points;
@@ -352,26 +340,27 @@ export class TreeDemo {
       { x: centerX - size, y: centerY + size }
     ];
 
-    // 像素周长/米周长得到统一像素/米比例
+    const scale = (this.groundConfig.endX - this.groundConfig.startX) / this.parameters.length; // 像素/米
+    const pxInterval = Math.max(1, this.parameters.interval * scale);
+    let points = [];
+
     const edges = [
       { start: vertices[0], end: vertices[1] },
       { start: vertices[1], end: vertices[2] },
       { start: vertices[2], end: vertices[3] },
       { start: vertices[3], end: vertices[0] },
     ];
-    const perimeterPx = edges.reduce((sum, e) => sum + Math.hypot(e.end.x - e.start.x, e.end.y - e.start.y), 0);
-    const perimeterMeters = 4 * this.parameters.length;
-    const pxPerMeter = perimeterPx / Math.max(1e-6, perimeterMeters);
-    const pxInterval = Math.max(1, this.parameters.interval * pxPerMeter);
-
-    let points = [];
 
     if (mode === 'circle') {
       // 环形：整圈均匀分布（避免顶点重复）
       edges.forEach(({ start, end }) => {
-        const dx = end.x - start.x; const dy = end.y - start.y; const L = Math.hypot(dx, dy);
-        for (let s = 0; s < L; s += pxInterval) {
-          const t = s / L; const x = start.x + dx * t, y = start.y + dy * t;
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
+        const edgeLength = Math.hypot(dx, dy);
+        for (let s = 0; s < edgeLength; s += pxInterval) {
+          const t = s / edgeLength;
+          const x = start.x + dx * t;
+          const y = start.y + dy * t;
           const last = points[points.length - 1];
           if (!last || Math.hypot(last.x - x, last.y - y) > 0.5) points.push({ x, y });
         }
@@ -380,17 +369,24 @@ export class TreeDemo {
       // 直线端点模式映射到每条边
       edges.forEach((seg, idx) => {
         const { start, end } = seg;
-        const dx = end.x - start.x; const dy = end.y - start.y; const L = Math.hypot(dx, dy);
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
+        const edgeLength = Math.hypot(dx, dy);
         const includeStart = (idx === 0) ? (mode === 'both' || mode === 'one') : false; // 仅首边决定是否包含第一个顶点
         const includeEnd = (idx === edges.length - 1) ? (mode === 'both') : true; // 中间边包含终点，与下一边起点去重
 
         let s = includeStart ? 0 : pxInterval;
-        for (; s < L - 1e-6; s += pxInterval) {
-          const t = s / L; points.push({ x: start.x + dx * t, y: start.y + dy * t });
-        }
-        if (includeEnd) {
-          const x = end.x, y = end.y; const last = points[points.length - 1];
-          if (!last || Math.hypot(last.x - x, last.y - y) > 0.5) points.push({ x, y });
+        for (; s <= edgeLength + 1e-6; s += pxInterval) {
+          if (s >= edgeLength - 1e-6) {
+            if (!includeEnd) break;
+            const x = end.x, y = end.y;
+            const last = points[points.length - 1];
+            if (!last || Math.hypot(last.x - x, last.y - y) > 0.5) points.push({ x, y });
+            break;
+          } else {
+            const t = s / edgeLength;
+            points.push({ x: start.x + dx * t, y: start.y + dy * t });
+          }
         }
       });
     }
