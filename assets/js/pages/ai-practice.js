@@ -488,8 +488,9 @@ function initSmartChatFeature(container, getCurrentQuestion) {
     textEl.innerHTML = formattedContent;
     messageEl.appendChild(textEl);
 
-    // 清空欢迎消息
-    if (chatHistory.children.length === 1 && chatHistory.firstChild.style.textAlign === 'center') {
+    // 清空欢迎消息（避免 firstChild 是文本节点）
+    const firstEl = chatHistory.firstElementChild;
+    if (chatHistory.children.length === 1 && firstEl && firstEl.style && firstEl.style.textAlign === 'center') {
       chatHistory.innerHTML = '';
     }
 
