@@ -435,17 +435,17 @@ function initDemoInteraction(container) {
     const centerY = groundConfig.startY;
     const radius = Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
 
-    // 统一使用“米→像素”的换算，保证真实间距
-    const scale = (groundConfig.endX - groundConfig.startX) / groundConfig.length; // 像素/米
-    const pxInterval = Math.max(1, groundConfig.interval * scale);
+    // 使用“实际像素周长 / 题目米周长(π×直径)”得到像素/米
+    const circumferencePx = 2 * Math.PI * radius;
+    const circumferenceMeters = Math.PI * groundConfig.length; // 输入length被当作直径
+    const pxPerMeter = circumferencePx / Math.max(1e-6, circumferenceMeters);
+    const pxInterval = Math.max(1, groundConfig.interval * pxPerMeter);
 
-    // 计算圆周长和需要的点数
-    const circumference = 2 * Math.PI * radius;
-    const numPoints = Math.max(3, Math.floor(circumference / pxInterval));
+    const numPoints = Math.max(3, Math.floor(circumferencePx / pxInterval));
 
     let points = [];
     for (let i = 0; i < numPoints; i++) {
-      const angle = (i / numPoints) * 2 * Math.PI;
+      const angle = (i / Math.max(1, numPoints)) * 2 * Math.PI;
       const x = centerX + radius * Math.cos(angle);
       const y = centerY + radius * Math.sin(angle);
       points.push({ x, y });
@@ -460,57 +460,50 @@ function initDemoInteraction(container) {
     const centerY = groundConfig.startY;
     const size = Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
 
-    // 等边三角形的三个顶点
+    // 顶点与绘制一致
     const vertices = [
-      { x: centerX, y: centerY - size * 0.8 }, // 顶点
-      { x: centerX - size * 0.8, y: centerY + size * 0.4 }, // 左下
-      { x: centerX + size * 0.8, y: centerY + size * 0.4 }  // 右下
+      { x: centerX, y: centerY - size * 0.8 },
+      { x: centerX - size * 0.8, y: centerY + size * 0.4 },
+      { x: centerX + size * 0.8, y: centerY + size * 0.4 }
     ];
 
-    const scale = (groundConfig.endX - groundConfig.startX) / groundConfig.length; // 像素/米
-    const pxInterval = Math.max(1, groundConfig.interval * scale);
+    // 使用像素周长/米周长换算
+    const edgeLengths = [0,1,2].map(i => {
+      const a = vertices[i], b = vertices[(i+1)%3];
+      return Math.hypot(b.x - a.x, b.y - a.y);
+    });
+    const perimeterPx = edgeLengths.reduce((a,b)=>a+b,0);
+    const perimeterMeters = 3 * groundConfig.length;
+    const pxPerMeter = perimeterPx / Math.max(1e-6, perimeterMeters);
+    const pxInterval = Math.max(1, groundConfig.interval * pxPerMeter);
+
     let points = [];
 
     if (mode === 'circle') {
-      // 环形：沿三条边整圈均匀分布
+      // 环形：沿三边取样，避免重复
       for (let i = 0; i < 3; i++) {
-        const start = vertices[i];
-        const end = vertices[(i + 1) % 3];
-        const dx = end.x - start.x;
-        const dy = end.y - start.y;
-        const edgeLength = Math.hypot(dx, dy);
-        for (let s = 0; s < edgeLength; s += pxInterval) {
-          const t = s / edgeLength;
-          const x = start.x + dx * t;
-          const y = start.y + dy * t;
+        const start = vertices[i], end = vertices[(i+1)%3];
+        const dx = end.x - start.x, dy = end.y - start.y, L = Math.hypot(dx, dy);
+        for (let s = 0; s < L; s += pxInterval) {
+          const t = s / L, x = start.x + dx*t, y = start.y + dy*t;
           const last = points[points.length - 1];
           if (!last || Math.hypot(last.x - x, last.y - y) > 0.5) points.push({ x, y });
         }
       }
     } else {
-      // 类比直线模式的端点规则
+      // 非环形：端点包含规则
       for (let i = 0; i < 3; i++) {
-        const start = vertices[i];
-        const end = vertices[(i + 1) % 3];
-        const dx = end.x - start.x;
-        const dy = end.y - start.y;
-        const edgeLength = Math.hypot(dx, dy);
-        const includeStart = mode === 'both' || mode === 'one';
-        const includeEnd = mode === 'both';
-        const startS = (i === 0 ? (includeStart ? 0 : pxInterval) : pxInterval);
-        for (let s = startS; s <= edgeLength + 1e-6; s += pxInterval) {
-          if (s >= edgeLength - 1e-6) {
-            if (!includeEnd) break;
-            const x = end.x, y = end.y;
-            const last = points[points.length - 1];
-            if (!last || Math.hypot(last.x - x, last.y - y) > 0.5) points.push({ x, y });
-            break;
-          } else {
-            const t = s / edgeLength;
-            const x = start.x + dx * t;
-            const y = start.y + dy * t;
-            points.push({ x, y });
-          }
+        const start = vertices[i], end = vertices[(i+1)%3];
+        const includeStart = (i === 0) && (mode === 'both' || mode === 'one');
+        const includeEnd = (mode === 'both');
+        const dx = end.x - start.x, dy = end.y - start.y, L = Math.hypot(dx, dy);
+        let s = includeStart ? 0 : pxInterval;
+        for (; s < L - 1e-6; s += pxInterval) {
+          const t = s / L; points.push({ x: start.x + dx*t, y: start.y + dy*t });
+        }
+        if (includeEnd) {
+          const x = end.x, y = end.y; const last = points[points.length-1];
+          if (!last || Math.hypot(last.x - x, last.y - y) > 0.5) points.push({ x, y });
         }
       }
     }
@@ -524,58 +517,51 @@ function initDemoInteraction(container) {
     const centerY = groundConfig.startY;
     const size = Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
 
-    // 正方形的四个顶点
+    // 顶点
     const vertices = [
-      { x: centerX - size, y: centerY - size }, // 左上
-      { x: centerX + size, y: centerY - size }, // 右上
-      { x: centerX + size, y: centerY + size }, // 右下
-      { x: centerX - size, y: centerY + size }  // 左下
+      { x: centerX - size, y: centerY - size },
+      { x: centerX + size, y: centerY - size },
+      { x: centerX + size, y: centerY + size },
+      { x: centerX - size, y: centerY + size }
     ];
 
-    const scale = (groundConfig.endX - groundConfig.startX) / groundConfig.length; // 像素/米
-    const pxInterval = Math.max(1, groundConfig.interval * scale);
-    let points = [];
-
+    // 使用实际像素周长/米周长换算
     const edges = [
       { start: vertices[0], end: vertices[1] },
       { start: vertices[1], end: vertices[2] },
       { start: vertices[2], end: vertices[3] },
       { start: vertices[3], end: vertices[0] },
     ];
+    const perimeterPx = edges.reduce((sum, e) => sum + Math.hypot(e.end.x - e.start.x, e.end.y - e.start.y), 0);
+    const perimeterMeters = 4 * groundConfig.length;
+    const pxPerMeter = perimeterPx / Math.max(1e-6, perimeterMeters);
+    const pxInterval = Math.max(1, groundConfig.interval * pxPerMeter);
+
+    let points = [];
 
     if (mode === 'circle') {
-      // 环形：整圈均匀分布
+      // 环形：整圈均匀分布（避免顶点重复）
       edges.forEach(({ start, end }) => {
-        const dx = end.x - start.x;
-        const dy = end.y - start.y;
-        const edgeLength = Math.hypot(dx, dy);
-        for (let s = 0; s < edgeLength; s += pxInterval) {
-          const t = s / edgeLength;
-          points.push({ x: start.x + dx * t, y: start.y + dy * t });
+        const dx = end.x - start.x, dy = end.y - start.y, L = Math.hypot(dx, dy);
+        for (let s = 0; s < L; s += pxInterval) {
+          const t = s / L, x = start.x + dx*t, y = start.y + dy*t;
+          const last = points[points.length - 1];
+          if (!last || Math.hypot(last.x - x, last.y - y) > 0.5) points.push({ x, y });
         }
       });
     } else {
-      // 直线端点模式映射到每条边
+      // 非环形：端点包含规则
       edges.forEach((seg, idx) => {
-        const { start, end } = seg;
-        const dx = end.x - start.x;
-        const dy = end.y - start.y;
-        const edgeLength = Math.hypot(dx, dy);
-        const includeStart = (idx === 0) ? (mode === 'both' || mode === 'one') : false; // 仅首边决定是否包含第一个顶点
-        const includeEnd = (idx === edges.length - 1) ? (mode === 'both') : true; // 中间边包含终点，与下一边起点去重
-
+        const { start, end } = seg; const dx = end.x - start.x, dy = end.y - start.y, L = Math.hypot(dx, dy);
+        const includeStart = (idx === 0) ? (mode === 'both' || mode === 'one') : false;
+        const includeEnd = (idx === edges.length - 1) ? (mode === 'both') : true;
         let s = includeStart ? 0 : pxInterval;
-        for (; s <= edgeLength + 1e-6; s += pxInterval) {
-          if (s >= edgeLength - 1e-6) {
-            if (!includeEnd) break;
-            const x = end.x, y = end.y;
-            const last = points[points.length - 1];
-            if (!last || Math.hypot(last.x - x, last.y - y) > 0.5) points.push({ x, y });
-            break;
-          } else {
-            const t = s / edgeLength;
-            points.push({ x: start.x + dx * t, y: start.y + dy * t });
-          }
+        for (; s < L - 1e-6; s += pxInterval) {
+          const t = s / L; points.push({ x: start.x + dx*t, y: start.y + dy*t });
+        }
+        if (includeEnd) {
+          const x = end.x, y = end.y; const last = points[points.length - 1];
+          if (!last || Math.hypot(last.x - x, last.y - y) > 0.5) points.push({ x, y });
         }
       });
     }
