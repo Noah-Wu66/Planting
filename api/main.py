@@ -6,6 +6,10 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import os
 import warnings
+# 在导入可能触发Pydantic模型生成的库之前，屏蔽特定Pydantic告警
+warnings.filterwarnings("ignore", message=".*is not a Python type.*", category=UserWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module=r"pydantic\._internal\._generate_schema")
+
 from pathlib import Path
 from google import genai
 from google.genai import types
@@ -15,8 +19,6 @@ import logging
 import traceback
 
 
-# 过滤 Pydantic 关于 any 函数的警告
-warnings.filterwarnings("ignore", message=".*is not a Python type.*", category=UserWarning)
 
 app = FastAPI(title="植树问题AI学习平台", version="1.0.0")
 
