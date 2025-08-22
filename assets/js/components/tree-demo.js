@@ -261,10 +261,8 @@ export class TreeDemo {
     const centerX = (this.groundConfig.startX + this.groundConfig.endX) / 2;
     const centerY = this.groundConfig.startY;
     const radius = Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8; // 与地面图形一致
-    const scale = (this.groundConfig.endX - this.groundConfig.startX) / this.parameters.length; // 像素/米
-    const pxInterval = Math.max(1, this.parameters.interval * scale);
-    const circumference = 2 * Math.PI * radius;
-    const numPoints = Math.max(3, Math.floor(circumference / pxInterval));
+    // 闭合图形：树数 = ⌊周长/间距⌋，这里周长直接取参数 length
+    const numPoints = Math.max(3, Math.floor(this.parameters.length / this.parameters.interval));
 
     let points = [];
     for (let i = 0; i < numPoints; i++) {
@@ -278,19 +276,17 @@ export class TreeDemo {
   }
   
   generateTrianglePoints(mode) {
-    // 目标：按“周长 ÷ 间距”的点数，沿三角形三条边等距分布（与显示尺寸无关，数量正确）
+    // 闭合三角形：树数 = ⌊(3×length)/interval⌋，按像素周长等距分布
     const centerX = (this.groundConfig.startX + this.groundConfig.endX) / 2;
     const centerY = this.groundConfig.startY;
     const size = Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8;
 
-    // 等边三角形顶点（与地面图形一致）
     const vertices = [
       { x: centerX, y: centerY - size * 0.8 },
       { x: centerX - size * 0.8, y: centerY + size * 0.4 },
       { x: centerX + size * 0.8, y: centerY + size * 0.4 }
     ];
 
-    // 像素边长与总像素周长
     const edges = [
       { start: vertices[0], end: vertices[1] },
       { start: vertices[1], end: vertices[2] },
@@ -299,19 +295,14 @@ export class TreeDemo {
     const edgeLens = edges.map(e => Math.hypot(e.end.x - e.start.x, e.end.y - e.start.y));
     const totalPx = edgeLens.reduce((a, b) => a + b, 0);
 
-    // 以“米”为准计算需要的点数（与显示尺寸解耦）
-    const perimeterMeters = this.parameters.length * 3;
-    const treeCount = Math.max(3, Math.floor(perimeterMeters / this.parameters.interval));
+    const treeCount = Math.max(3, Math.floor(this.parameters.length / this.parameters.interval));
     if (treeCount <= 0 || totalPx <= 0) return [];
 
     const stepPx = totalPx / treeCount;
-    let acc = 0;
     let points = [];
 
     for (let i = 0; i < treeCount; i++) {
-      const target = i * stepPx;
-      // 找到 target 落在哪条边上
-      let rem = target;
+      let rem = i * stepPx;
       let edgeIndex = 0;
       while (edgeIndex < edges.length && rem > edgeLens[edgeIndex]) {
         rem -= edgeLens[edgeIndex];
@@ -320,15 +311,14 @@ export class TreeDemo {
       const e = edges[edgeIndex % edges.length];
       const len = edgeLens[edgeIndex % edges.length];
       const t = len === 0 ? 0 : rem / len;
-      const x = e.start.x + (e.end.x - e.start.x) * t;
-      const y = e.start.y + (e.end.y - e.start.y) * t;
-      points.push({ x, y });
+      points.push({ x: e.start.x + (e.end.x - e.start.x) * t, y: e.start.y + (e.end.y - e.start.y) * t });
     }
 
     return points;
   }
   
   generateSquarePoints(mode) {
+    // 闭合正方形：树数 = ⌊(4×length)/interval⌋，沿像素周长等距分布
     const centerX = (this.groundConfig.startX + this.groundConfig.endX) / 2;
     const centerY = this.groundConfig.startY;
     const size = Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8;
@@ -340,55 +330,32 @@ export class TreeDemo {
       { x: centerX - size, y: centerY + size }
     ];
 
-    const scale = (this.groundConfig.endX - this.groundConfig.startX) / this.parameters.length; // 像素/米
-    const pxInterval = Math.max(1, this.parameters.interval * scale);
-    let points = [];
-
     const edges = [
       { start: vertices[0], end: vertices[1] },
       { start: vertices[1], end: vertices[2] },
       { start: vertices[2], end: vertices[3] },
       { start: vertices[3], end: vertices[0] },
     ];
+    const edgeLens = edges.map(e => Math.hypot(e.end.x - e.start.x, e.end.y - e.start.y));
+    const totalPx = edgeLens.reduce((a, b) => a + b, 0);
 
-    if (mode === 'circle') {
-      // 环形：整圈均匀分布（避免顶点重复）
-      edges.forEach(({ start, end }) => {
-        const dx = end.x - start.x;
-        const dy = end.y - start.y;
-        const edgeLength = Math.hypot(dx, dy);
-        for (let s = 0; s < edgeLength; s += pxInterval) {
-          const t = s / edgeLength;
-          const x = start.x + dx * t;
-          const y = start.y + dy * t;
-          const last = points[points.length - 1];
-          if (!last || Math.hypot(last.x - x, last.y - y) > 0.5) points.push({ x, y });
-        }
-      });
-    } else {
-      // 直线端点模式映射到每条边
-      edges.forEach((seg, idx) => {
-        const { start, end } = seg;
-        const dx = end.x - start.x;
-        const dy = end.y - start.y;
-        const edgeLength = Math.hypot(dx, dy);
-        const includeStart = (idx === 0) ? (mode === 'both' || mode === 'one') : false; // 仅首边决定是否包含第一个顶点
-        const includeEnd = (idx === edges.length - 1) ? (mode === 'both') : true; // 中间边包含终点，与下一边起点去重
+    const treeCount = Math.max(4, Math.floor(this.parameters.length / this.parameters.interval));
+    if (treeCount <= 0 || totalPx <= 0) return [];
 
-        let s = includeStart ? 0 : pxInterval;
-        for (; s <= edgeLength + 1e-6; s += pxInterval) {
-          if (s >= edgeLength - 1e-6) {
-            if (!includeEnd) break;
-            const x = end.x, y = end.y;
-            const last = points[points.length - 1];
-            if (!last || Math.hypot(last.x - x, last.y - y) > 0.5) points.push({ x, y });
-            break;
-          } else {
-            const t = s / edgeLength;
-            points.push({ x: start.x + dx * t, y: start.y + dy * t });
-          }
-        }
-      });
+    const stepPx = totalPx / treeCount;
+    let points = [];
+
+    for (let i = 0; i < treeCount; i++) {
+      let rem = i * stepPx;
+      let edgeIndex = 0;
+      while (edgeIndex < edges.length && rem > edgeLens[edgeIndex]) {
+        rem -= edgeLens[edgeIndex];
+        edgeIndex++;
+      }
+      const e = edges[edgeIndex % edges.length];
+      const len = edgeLens[edgeIndex % edges.length];
+      const t = len === 0 ? 0 : rem / len;
+      points.push({ x: e.start.x + (e.end.x - e.start.x) * t, y: e.start.y + (e.end.y - e.start.y) * t });
     }
 
     return points;
@@ -445,7 +412,7 @@ export class TreeDemo {
     if (shape === 'line') {
       const intervalCount = Math.floor(length / interval);
       steps.push(`道路长度 ÷ 间距 = 间隔数：${length} ÷ ${interval} = ${intervalCount}个间隔`);
-      
+
       if (mode === 'both') {
         const oneSide = intervalCount + 1;
         steps.push(`两端都种：一边树的棵数 = 间隔数 + 1 = ${intervalCount} + 1 = ${oneSide}棵`);
@@ -461,20 +428,14 @@ export class TreeDemo {
         steps.push(`环形种植：树的棵数 = 间隔数 = ${intervalCount}棵`);
       }
     } else if (shape === 'circle') {
-      const circumference = Math.PI * length;
-      const treeCount = Math.floor(circumference / interval);
-      steps.push(`圆的周长 = π × 直径 = 3.14 × ${length} ≈ ${circumference.toFixed(1)}米`);
-      steps.push(`树的棵数 = 周长 ÷ 间距 = ${circumference.toFixed(1)} ÷ ${interval} ≈ ${treeCount}棵`);
+      const treeCount = Math.floor(length / interval);
+      steps.push(`圆形为闭合图形：树的棵数 = 周长 ÷ 间距 = ${length} ÷ ${interval} = ${treeCount}棵`);
     } else if (shape === 'triangle') {
-      const perimeter = length * 3;
-      const treeCount = Math.floor(perimeter / interval);
-      steps.push(`三角形周长 = 边长 × 3 = ${length} × 3 = ${perimeter}米`);
-      steps.push(`树的棵数 = 周长 ÷ 间距 = ${perimeter} ÷ ${interval} = ${treeCount}棵`);
+      const treeCount = Math.floor((length * 3) / interval);
+      steps.push(`三角形为闭合图形：树的棵数 = 周长 ÷ 间距 = ${length} × 3 ÷ ${interval} = ${treeCount}棵`);
     } else if (shape === 'square') {
-      const perimeter = length * 4;
-      const treeCount = Math.floor(perimeter / interval);
-      steps.push(`正方形周长 = 边长 × 4 = ${length} × 4 = ${perimeter}米`);
-      steps.push(`树的棵数 = 周长 ÷ 间距 = ${perimeter} ÷ ${interval} = ${treeCount}棵`);
+      const treeCount = Math.floor((length * 4) / interval);
+      steps.push(`正方形为闭合图形：树的棵数 = 周长 ÷ 间距 = ${length} × 4 ÷ ${interval} = ${treeCount}棵`);
     }
     
     return steps;
