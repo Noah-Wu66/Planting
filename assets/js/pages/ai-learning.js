@@ -10,7 +10,7 @@ export function AILearning(){
         <a class="btn primary" href="#/ai-learning">🤖 AI学习</a>
       </div>
       <h1>🤖 AI智能学习助手</h1>
-      <p>通过拖拽树木到地面上，与AI助手互动学习植树问题的奥秘。</p>
+      <p>设置参数后观看种树演示，与AI助手互动学习植树问题的奥秘。</p>
     </div>
 
     <!-- 控制面板 -->
@@ -46,13 +46,13 @@ export function AILearning(){
       </div>
       <div style="text-align: center;">
         <button class="btn" id="clear-all">🗑️ 清空重置</button>
-        <button class="btn primary" id="update-ground">🔄 更新地面</button>
+        <button class="btn primary" id="random-generate">🎲 随机生成</button>
       </div>
     </div>
 
-    <!-- 拖拽交互区域 -->
+    <!-- 种树演示区域 -->
     <div class="card" style="margin-top:20px;">
-      <h2>🌳 拖拽种树区域</h2>
+      <h2>🌳 种树演示区域</h2>
       <div id="drag-area" style="position: relative; width: 100%; height: 300px; border: 2px dashed var(--accent); border-radius: 12px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); overflow: hidden;">
         <!-- 地面线段 -->
         <svg id="ground-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
@@ -61,11 +61,9 @@ export function AILearning(){
           <g id="measurements"></g>
         </svg>
 
-        <!-- 树木工具栏 -->
+        <!-- 演示说明 -->
         <div style="position: absolute; top: 10px; left: 10px; display: flex; gap: 8px; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 8px; flex-wrap: wrap;">
-          <button class="btn small" id="add-tree">🌳 添加树木</button>
-          <button class="btn small" id="delete-tree" disabled>🗑️ 删除最后一棵</button>
-          <span style="font-size: 12px; color: var(--muted); align-self: center;" id="drag-hint">拖拽树木到线段上</span>
+          <span style="font-size: 12px; color: var(--muted); align-self: center;" id="demo-hint">🌳 正确的种树演示</span>
         </div>
 
         <!-- 状态显示 -->
@@ -83,14 +81,14 @@ export function AILearning(){
       <div id="chat-history" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; background: #f8fafc;">
         <div style="text-align: center; color: var(--muted); padding: 20px;">
           <div style="font-size: 32px; margin-bottom: 8px;">🤖</div>
-          <p>你好！我是你的植树问题学习助手。<br>请先在上方拖拽一些树木，然后向我提问吧！</p>
+          <p>你好！我是你的植树问题学习助手。<br>设置参数后观看演示，然后向我提问吧！</p>
         </div>
       </div>
 
       <!-- 输入区域 -->
       <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-        <input id="chat-input" type="text" placeholder="请输入你的问题..." style="flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 14px;">
-        <button id="send-message" class="btn primary" disabled>发送</button>
+        <input id="chat-input" type="text" value="解读演示" placeholder="请输入你的问题..." style="flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 14px;">
+        <button id="send-message" class="btn primary">发送</button>
       </div>
 
       <!-- 控制按钮 -->
@@ -109,14 +107,14 @@ export function AILearning(){
 
   // 初始化交互功能
   setTimeout(() => {
-    initDragInteraction(el);
+    initDemoInteraction(el);
   }, 0);
 
   return el;
 }
 
-// 拖拽交互逻辑
-function initDragInteraction(container) {
+// 演示交互逻辑
+function initDemoInteraction(container) {
   const dragArea = container.querySelector('#drag-area');
   const groundSvg = container.querySelector('#ground-svg');
   const groundLine = container.querySelector('#ground-line');
@@ -139,6 +137,107 @@ function initDragInteraction(container) {
   };
   let treeIdCounter = 0;
 
+  // 随机生成参数
+  function generateRandomParameters() {
+    const lengths = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
+    const intervals = [5, 10, 15, 20, 25];
+    const modes = ['both', 'none', 'one', 'circle'];
+    const shapes = ['line', 'circle', 'triangle', 'square'];
+
+    const randomLength = lengths[Math.floor(Math.random() * lengths.length)];
+    const randomInterval = intervals[Math.floor(Math.random() * intervals.length)];
+    const randomMode = modes[Math.floor(Math.random() * modes.length)];
+    const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+
+    // 更新界面
+    container.querySelector('#ground-length').value = randomLength;
+    container.querySelector('#tree-interval').value = randomInterval;
+    container.querySelector('#tree-mode').value = randomMode;
+    container.querySelector('#shape-mode').value = randomShape;
+
+    // 更新地面和演示
+    updateGround();
+    updateDemo();
+  }
+
+  // 更新演示
+  function updateDemo() {
+    // 清除现有树木
+    trees = [];
+    clearTreeElements();
+
+    // 根据参数生成正确的树木位置
+    const correctPositions = calculateCorrectTreePositions();
+    
+    // 创建树木元素
+    correctPositions.forEach((pos, index) => {
+      const tree = {
+        id: `demo-tree-${++treeIdCounter}`,
+        x: pos.x - 18, // 调整显示位置
+        y: pos.y - 36,
+        isPlaced: true
+      };
+      trees.push(tree);
+      createDemoTreeElement(tree);
+    });
+
+    updateTreeDisplay();
+  }
+
+  // 计算正确的树木位置
+  function calculateCorrectTreePositions() {
+    const mode = container.querySelector('#tree-mode').value;
+    const shape = container.querySelector('#shape-mode').value;
+    let positions = [];
+
+    // 根据图形模式生成不同的种植点
+    switch (shape) {
+      case 'line':
+        positions = generateLinePoints(mode);
+        break;
+      case 'circle':
+        positions = generateCirclePoints(mode);
+        break;
+      case 'triangle':
+        positions = generateTrianglePoints(mode);
+        break;
+      case 'square':
+        positions = generateSquarePoints(mode);
+        break;
+      default:
+        positions = generateLinePoints(mode);
+    }
+
+    return positions;
+  }
+
+  // 清除所有树木元素
+  function clearTreeElements() {
+    const existingTrees = dragArea.querySelectorAll('.demo-tree');
+    existingTrees.forEach(tree => tree.remove());
+  }
+
+  // 创建演示树木元素（不可拖拽）
+  function createDemoTreeElement(tree) {
+    const treeEl = document.createElement('div');
+    treeEl.className = 'demo-tree';
+    treeEl.id = tree.id;
+    treeEl.innerHTML = '🌳';
+    const treeSize = isMobile ? '32px' : '36px';
+    treeEl.style.cssText = `
+      position: absolute;
+      left: ${tree.x}px;
+      top: ${tree.y}px;
+      font-size: ${treeSize};
+      user-select: none;
+      z-index: 10;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+      pointer-events: none;
+      animation: treeAppear 0.3s ease-out;
+    `;
+
+    dragArea.appendChild(treeEl);
+  }
   // 更新地面显示
   function updateGround() {
     const length = parseFloat(container.querySelector('#ground-length').value);
@@ -153,7 +252,7 @@ function initDragInteraction(container) {
     const maxPixelLength = dragArea.clientWidth - 100; // 留边距
     const pixelLength = Math.min(maxPixelLength, length * 4); // 4像素/米的比例
 
-    // 修复问题1：使地面线段在区域中心显示，向两侧均匀延长
+    // 使地面线段在区域中心显示
     const centerX = dragArea.clientWidth / 2;
     groundConfig.startX = centerX - pixelLength / 2;
     groundConfig.endX = centerX + pixelLength / 2;
@@ -164,6 +263,9 @@ function initDragInteraction(container) {
     // 生成吸附点
     updateSnapPoints();
     updateMeasurements();
+    
+    // 自动更新演示
+    updateDemo();
   }
 
   // 更新地面图形显示
@@ -446,12 +548,13 @@ function initDragInteraction(container) {
 
   // 初始化
   updateGround();
-  updateTreeDisplay(); // 确保删除按钮初始状态正确
+  updateTreeDisplay();
 
   // 事件监听器
-  container.querySelector('#update-ground').addEventListener('click', updateGround);
+  container.querySelector('#random-generate').addEventListener('click', generateRandomParameters);
   container.querySelector('#clear-all').addEventListener('click', () => {
     trees = [];
+    clearTreeElements();
     updateTreeDisplay();
     // 重置参数
     container.querySelector('#ground-length').value = 100;
@@ -461,278 +564,35 @@ function initDragInteraction(container) {
     updateGround();
   });
 
-  // 添加树木
-  function addTree() {
-    const tree = {
-      id: `tree-${++treeIdCounter}`,
-      x: 100 + Math.random() * 200,
-      y: 50 + Math.random() * 50,
-      isPlaced: false
-    };
-    trees.push(tree);
-    createTreeElement(tree);
-    updateTreeDisplay();
-  }
+  // 参数变化监听（实时同步）
+  const paramInputs = [
+    '#ground-length',
+    '#tree-interval',
+    '#tree-mode',
+    '#shape-mode'
+  ];
 
-  // 创建树木DOM元素
-  function createTreeElement(tree) {
-    const treeEl = document.createElement('div');
-    treeEl.className = 'draggable-tree';
-    treeEl.id = tree.id;
-    treeEl.innerHTML = '🌳';
-    // 修复问题4：增大树木图标显示尺寸，提高可视性
-    const treeSize = isMobile ? '32px' : '36px'; // 移动端32px，桌面端36px
-    treeEl.style.cssText = `
-      position: absolute;
-      left: ${tree.x}px;
-      top: ${tree.y}px;
-      font-size: ${treeSize};
-      cursor: grab;
-      user-select: none;
-      z-index: 10;
-      transition: transform 0.2s ease;
-      ${tree.isPlaced ? 'filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));' : ''}
-      ${isMobile ? 'touch-action: none;' : ''}
-    `;
-
-    // 拖拽事件（支持鼠标和触摸）
-    let isDragging = false;
-    let startX, startY, offsetX, offsetY;
-
-    // 获取事件坐标（兼容鼠标和触摸）
-    function getEventCoords(e) {
-      if (e.touches && e.touches.length > 0) {
-        return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
-      }
-      return { clientX: e.clientX, clientY: e.clientY };
+  paramInputs.forEach(selector => {
+    const element = container.querySelector(selector);
+    if (element) {
+      element.addEventListener('change', updateGround);
+      element.addEventListener('input', updateGround);
     }
+  });
 
-    // 开始拖拽
-    function startDrag(e) {
-      isDragging = true;
-      treeEl.style.cursor = 'grabbing';
-      treeEl.style.zIndex = '20';
-
-      const coords = getEventCoords(e);
-      const rect = dragArea.getBoundingClientRect();
-      startX = coords.clientX - rect.left;
-      startY = coords.clientY - rect.top;
-      offsetX = startX - tree.x;
-      offsetY = startY - tree.y;
-
-      e.preventDefault();
+  // 移动端提示文本优化
+  if (isMobile) {
+    const demoHint = container.querySelector('#demo-hint');
+    if (demoHint) {
+      demoHint.textContent = '🌳 正确的种树演示';
     }
-
-    treeEl.addEventListener('mousedown', startDrag);
-    treeEl.addEventListener('touchstart', startDrag, { passive: false });
-
-    // 移动事件处理（兼容鼠标和触摸）
-    const handleMove = (e) => {
-      if (!isDragging) return;
-
-      const coords = getEventCoords(e);
-      const rect = dragArea.getBoundingClientRect();
-      const newX = coords.clientX - rect.left - offsetX;
-      const newY = coords.clientY - rect.top - offsetY;
-
-      // 边界检查
-      const boundedX = Math.max(0, Math.min(dragArea.clientWidth - 30, newX));
-      const boundedY = Math.max(0, Math.min(dragArea.clientHeight - 30, newY));
-
-      tree.x = boundedX;
-      tree.y = boundedY;
-      treeEl.style.left = boundedX + 'px';
-      treeEl.style.top = boundedY + 'px';
-
-      // 检查吸附
-      checkSnapping(tree, treeEl);
-
-      e.preventDefault(); // 防止移动端滚动
-    };
-
-    // 结束拖拽
-    const handleEnd = (e) => {
-      if (!isDragging) return;
-      isDragging = false;
-      treeEl.style.cursor = 'grab';
-      treeEl.style.zIndex = '10';
-
-      // 最终吸附检查
-      const snapped = checkSnapping(tree, treeEl, true);
-      if (snapped) {
-        tree.isPlaced = true;
-        treeEl.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))';
-      } else {
-        tree.isPlaced = false;
-        treeEl.style.filter = '';
-      }
-
-      updateTreeDisplay();
-      if (window.updateChatInputState) window.updateChatInputState();
-    };
-
-    // 添加事件监听器（鼠标和触摸）
-    document.addEventListener('mousemove', handleMove);
-    document.addEventListener('mouseup', handleEnd);
-    document.addEventListener('touchmove', handleMove, { passive: false });
-    document.addEventListener('touchend', handleEnd);
-
-    // 删除功能（双击或长按）
-    let touchTimer = null;
-
-    function deleteTree() {
-      const index = trees.findIndex(t => t.id === tree.id);
-      if (index > -1) {
-        trees.splice(index, 1);
-        treeEl.remove();
-        updateTreeDisplay();
-        if (window.updateChatInputState) window.updateChatInputState();
-      }
-    }
-
-    // 双击删除（桌面端）
-    treeEl.addEventListener('dblclick', deleteTree);
-
-    // 长按删除（移动端）
-    treeEl.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 1) {
-        touchTimer = setTimeout(() => {
-          if (confirm('确定要删除这棵树吗？')) {
-            deleteTree();
-          }
-        }, 800); // 长按800ms触发删除
-      }
-    });
-
-    treeEl.addEventListener('touchend', () => {
-      if (touchTimer) {
-        clearTimeout(touchTimer);
-        touchTimer = null;
-      }
-    });
-
-    treeEl.addEventListener('touchmove', () => {
-      if (touchTimer) {
-        clearTimeout(touchTimer);
-        touchTimer = null;
-      }
-    });
-
-    dragArea.appendChild(treeEl);
-  }
-
-  // 检查吸附
-  function checkSnapping(tree, treeEl, finalSnap = false) {
-    const snapPointElements = snapPoints.querySelectorAll('circle');
-    const snapThreshold = finalSnap ? 50 : 40; // 修复问题2：增大吸附范围
-
-    let closestPoint = null;
-    let minDistance = Infinity;
-
-    // 获取树木图标的尺寸，用于计算中心点偏移
-    const treeSize = isMobile ? 32 : 36; // 与创建时的尺寸保持一致
-    const treeRootOffsetX = treeSize / 2 + 4; // 往左偏移4像素
-    const treeRootOffsetY = treeSize; // 根部位于图标底部
-
-    // 计算树木根部的位置（底部中心）
-    const treeRootX = tree.x + treeRootOffsetX;
-    const treeRootY = tree.y + treeRootOffsetY;
-
-    snapPointElements.forEach(point => {
-      const px = parseFloat(point.getAttribute('cx'));
-      const py = parseFloat(point.getAttribute('cy'));
-
-      // 修复问题2：改进距离计算，增强垂直方向的吸附能力
-      // 对于地面线段，主要考虑水平距离，垂直距离权重较小
-      const horizontalDistance = Math.abs(treeRootX - px);
-      const verticalDistance = Math.abs(treeRootY - py);
-
-      // 如果水平距离在合理范围内，则主要考虑垂直吸附
-      let distance;
-      if (horizontalDistance <= snapThreshold) {
-        distance = verticalDistance + horizontalDistance * 0.3; // 垂直距离为主，水平距离为辅
-      } else {
-        distance = Math.sqrt(horizontalDistance ** 2 + verticalDistance ** 2); // 标准欧几里得距离
-      }
-
-      if (distance < snapThreshold && distance < minDistance) {
-        minDistance = distance;
-        closestPoint = { x: px, y: py };
-      }
-    });
-
-    if (closestPoint && finalSnap) {
-      // 将树木的根部对齐到圆点，所以需要减去偏移量
-      tree.x = closestPoint.x - treeRootOffsetX;
-      tree.y = closestPoint.y - treeRootOffsetY;
-      treeEl.style.left = tree.x + 'px';
-      treeEl.style.top = tree.y + 'px';
-      treeEl.style.transform = 'scale(1.1)';
-      setTimeout(() => {
-        treeEl.style.transform = 'scale(1)';
-      }, 200);
-      return true;
-    } else if (closestPoint) {
-      treeEl.style.transform = 'scale(1.05)';
-    } else {
-      treeEl.style.transform = 'scale(1)';
-    }
-
-    return false;
   }
 
   function updateTreeDisplay() {
     treeCountDisplay.textContent = trees.length;
     const placedTrees = trees.filter(t => t.isPlaced).length;
     if (placedTrees > 0) {
-      treeCountDisplay.textContent += ` (${placedTrees} 已放置)`;
-    }
-
-    // 更新删除按钮状态
-    const deleteButton = container.querySelector('#delete-tree');
-    if (deleteButton) {
-      deleteButton.disabled = trees.length === 0;
-    }
-  }
-
-  // 删除最后一棵树
-  function deleteLastTree() {
-    if (trees.length > 0) {
-      const lastTree = trees[trees.length - 1];
-      const treeEl = container.querySelector(`#${lastTree.id}`);
-      if (treeEl) {
-        treeEl.remove();
-      }
-      trees.pop();
-      updateTreeDisplay();
-      if (window.updateChatInputState) window.updateChatInputState();
-    }
-  }
-
-  // 添加树木按钮事件
-  container.querySelector('#add-tree').addEventListener('click', addTree);
-
-  // 删除树木按钮事件
-  container.querySelector('#delete-tree').addEventListener('click', deleteLastTree);
-
-  // 图形模式切换事件
-  container.querySelector('#shape-mode').addEventListener('change', () => {
-    // 切换图形模式时，清除已放置的树木或重新调整位置
-    trees.forEach(tree => {
-      tree.isPlaced = false;
-      const treeEl = container.querySelector(`#${tree.id}`);
-      if (treeEl) {
-        treeEl.style.filter = '';
-      }
-    });
-    updateGround();
-  });
-
-  // 移动端提示文本优化
-  if (isMobile) {
-    const dragHint = container.querySelector('#drag-hint');
-    if (dragHint) {
-      dragHint.textContent = '拖拽或长按删除';
+      treeCountDisplay.textContent += ` (已放置: ${placedTrees})`;
     }
   }
 
@@ -765,15 +625,12 @@ function initChatFeature(container, getInteractionState) {
 
   // 更新输入状态
   function updateChatInputState() {
-    const hasPlacedTrees = getInteractionState().trees.length > 0;
     const hasInput = chatInput && chatInput.value.trim().length > 0;
 
     if (sendButton) {
-      sendButton.disabled = !hasPlacedTrees || !hasInput || isLoading;
+      sendButton.disabled = !hasInput || isLoading;
 
-      if (!hasPlacedTrees) {
-        sendButton.title = '请先放置一些树木';
-      } else if (!hasInput) {
+      if (!hasInput) {
         sendButton.title = '请输入问题';
       } else {
         sendButton.title = '';
