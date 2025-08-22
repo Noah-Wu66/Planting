@@ -111,6 +111,63 @@ class EvaluationResponse(BaseModel):
 # 存储会话状态（生产环境建议使用Redis等）
 sessions: Dict[str, List[ChatMessage]] = {}
 
+# 计算正确答案
+def calculate_tree_count(length: float, interval: float, mode: str, shape: str) -> int:
+    """计算植树问题的正确答案"""
+    if shape == "line":
+        # 直线种植
+        if mode == "both":
+            return int(length / interval) + 1
+        elif mode == "none":
+            return int(length / interval) - 1
+        elif mode == "one":
+            return int(length / interval)
+        else:
+            return int(length / interval) + 1
+    elif shape == "circle":
+        # 圆形种植（环形）
+        return int(length / interval)
+    elif shape == "triangle":
+        # 三角形种植（周长除以间距）
+        return int(length / interval)
+    elif shape == "square":
+        # 正方形种植（周长除以间距）
+        return int(length / interval)
+    else:
+        # 默认按直线两端种植计算
+        return int(length / interval) + 1
+
+def generate_solving_steps(length: float, interval: float, mode: str, shape: str) -> List[str]:
+    """生成解题步骤"""
+    steps = []
+    
+    if shape == "line":
+        steps.append(f"这是一道直线种植问题")
+        steps.append(f"已知：路长{length}米，间距{interval}米")
+        
+        if mode == "both":
+            steps.append(f"两端都种树的公式：棵数 = 路长 ÷ 间距 + 1")
+            steps.append(f"计算：{length} ÷ {interval} + 1 = {int(length/interval)} + 1 = {int(length/interval) + 1}棵")
+        elif mode == "none":
+            steps.append(f"两端都不种的公式：棵数 = 路长 ÷ 间距 - 1")
+            steps.append(f"计算：{length} ÷ {interval} - 1 = {int(length/interval)} - 1 = {int(length/interval) - 1}棵")
+        elif mode == "one":
+            steps.append(f"一端种树的公式：棵数 = 路长 ÷ 间距")
+            steps.append(f"计算：{length} ÷ {interval} = {int(length/interval)}棵")
+    elif shape == "circle":
+        steps.append(f"这是一道圆形种植问题")
+        steps.append(f"已知：圆周长{length}米，间距{interval}米")
+        steps.append(f"圆形种植公式：棵数 = 周长 ÷ 间距")
+        steps.append(f"计算：{length} ÷ {interval} = {int(length/interval)}棵")
+    elif shape in ["triangle", "square"]:
+        shape_name = "三角形" if shape == "triangle" else "正方形"
+        steps.append(f"这是一道{shape_name}种植问题")
+        steps.append(f"已知：{shape_name}周长{length}米，间距{interval}米")
+        steps.append(f"{shape_name}种植公式：棵数 = 周长 ÷ 间距")
+        steps.append(f"计算：{length} ÷ {interval} = {int(length/interval)}棵")
+    
+    return steps
+
 def generate_system_prompt(interaction_state: InteractionState) -> str:
     """根据当前交互状态生成系统提示"""
     trees = interaction_state.trees
@@ -351,6 +408,9 @@ async def generate_practice_question(request: QuestionRequest):
         ]
         
         generate_content_config = types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(
+                thinking_budget=16000,  # 恢复为16000
+            ),
             response_mime_type="text/plain",
         )
 
@@ -362,6 +422,11 @@ async def generate_practice_question(request: QuestionRequest):
         
         # 解析 AI 生成的题目
         question_text = response.text.strip()
+        
+        # 可选：打印Token使用情况用于调试
+        if hasattr(response, 'usage_metadata') and response.usage_metadata:
+            print(f"题目生成 - 输入Token: {response.usage_metadata.prompt_token_count}, "
+                  f"输出Token: {response.usage_metadata.candidates_token_count}")
         
         # 计算正确答案
         expected_answer = calculate_tree_count(params["length"], params["interval"], params["mode"], params["shape"])
@@ -419,13 +484,25 @@ async def check_practice_answer(request: AnswerRequest):
             )
         ]
         
+        generate_content_config = types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(
+                thinking_budget=16000,  # 恢复为16000
+            ),
+            response_mime_type="text/plain"
+        )
+        
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=contents,
-            config=types.GenerateContentConfig(response_mime_type="text/plain")
+            config=generate_content_config
         )
         
         explanation = response.text.strip()
+        
+        # 可选：打印Token使用情况用于调试
+        if hasattr(response, 'usage_metadata') and response.usage_metadata:
+            print(f"答案检查 - 输入Token: {response.usage_metadata.prompt_token_count}, "
+                  f"输出Token: {response.usage_metadata.candidates_token_count}")
         
         # 生成解题步骤
         solving_steps = generate_solving_steps(
@@ -479,13 +556,25 @@ async def evaluate_practice_session(request: EvaluationRequest):
             )
         ]
         
+        generate_content_config = types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(
+                thinking_budget=16000,  # 恢复为16000
+            ),
+            response_mime_type="text/plain"
+        )
+        
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=contents,
-            config=types.GenerateContentConfig(response_mime_type="text/plain")
+            config=generate_content_config
         )
         
         suggestions = [line.strip() for line in response.text.strip().split('\n') if line.strip()]
+        
+        # 可选：打印Token使用情况用于调试
+        if hasattr(response, 'usage_metadata') and response.usage_metadata:
+            print(f"评估生成 - 输入Token: {response.usage_metadata.prompt_token_count}, "
+                  f"输出Token: {response.usage_metadata.candidates_token_count}")
         
         # 判断表现等级
         performance = "需要加强"
@@ -545,7 +634,7 @@ async def chat_with_ai(request: ChatRequest):
         # 调用Gemini API
         generate_content_config = types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(
-                thinking_budget=16000,
+                thinking_budget=16000,  # 恢复为16000
             ),
             response_mime_type="text/plain",
         )
@@ -555,6 +644,15 @@ async def chat_with_ai(request: ChatRequest):
             contents=contents,
             config=generate_content_config
         )
+        
+        # 可选：检查缓存命中情况和Token使用
+        if hasattr(response, 'usage_metadata') and response.usage_metadata:
+            usage = response.usage_metadata
+            cache_info = ""
+            if hasattr(usage, 'cached_content_token_count') and usage.cached_content_token_count:
+                cache_info = f"，缓存Token: {usage.cached_content_token_count}"
+            print(f"AI学习对话 - 输入Token: {usage.prompt_token_count}, "
+                  f"输出Token: {usage.candidates_token_count}{cache_info}")
         
         # 更新对话历史
         updated_history = request.chat_history.copy() if not request.is_new_conversation else []
@@ -605,7 +703,7 @@ async def practice_chat_with_ai(request: ChatRequest):
         # 调用Gemini API
         generate_content_config = types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(
-                thinking_budget=16000,
+                thinking_budget=16000,  # 恢复为16000
             ),
             response_mime_type="text/plain",
         )
@@ -615,6 +713,15 @@ async def practice_chat_with_ai(request: ChatRequest):
             contents=contents,
             config=generate_content_config
         )
+        
+        # 可选：检查缓存命中情况和Token使用
+        if hasattr(response, 'usage_metadata') and response.usage_metadata:
+            usage = response.usage_metadata
+            cache_info = ""
+            if hasattr(usage, 'cached_content_token_count') and usage.cached_content_token_count:
+                cache_info = f"，缓存Token: {usage.cached_content_token_count}"
+            print(f"练习对话 - 输入Token: {usage.prompt_token_count}, "
+                  f"输出Token: {usage.candidates_token_count}{cache_info}")
         
         # 更新对话历史
         updated_history = request.chat_history.copy() if not request.is_new_conversation else []
