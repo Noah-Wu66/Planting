@@ -411,9 +411,6 @@ async def generate_practice_question(request: QuestionRequest):
         ]
 
         generate_content_config = types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(
-                thinking_budget=16000,  # 恢复为16000
-            ),
             response_mime_type="text/plain",
         )
 
@@ -488,9 +485,6 @@ async def check_practice_answer(request: AnswerRequest):
         ]
 
         generate_content_config = types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(
-                thinking_budget=16000,  # 恢复为16000
-            ),
             response_mime_type="text/plain"
         )
 
@@ -560,9 +554,6 @@ async def evaluate_practice_session(request: EvaluationRequest):
         ]
 
         generate_content_config = types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(
-                thinking_budget=16000,  # 恢复为16000
-            ),
             response_mime_type="text/plain"
         )
 
@@ -638,9 +629,6 @@ async def chat_with_ai(request: ChatRequest):
 
         # 调用Gemini API
         generate_content_config = types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(
-                thinking_budget=16000,  # 恢复为16000
-            ),
             response_mime_type="text/plain",
         )
 
@@ -719,9 +707,6 @@ async def practice_chat_with_ai(request: ChatRequest):
 
         # 调用Gemini API
         generate_content_config = types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(
-                thinking_budget=16000,  # 恢复为16000
-            ),
             response_mime_type="text/plain",
         )
 
