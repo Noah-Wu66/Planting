@@ -596,14 +596,11 @@ function initDemoInteraction(container) {
     }
   }
 
-  // 初始化AI对话功能
+  // 初始化AI对话功能（仅依赖参数设置，不传演示区域相关数据）
   initChatFeature(container, () => ({
-    trees: trees.filter(t => t.isPlaced).map(t => ({ x: t.x, y: t.y, id: t.id })),
     ground: {
       length: groundConfig.length,
-      interval: groundConfig.interval,
-      start_x: groundConfig.startX,
-      start_y: groundConfig.startY
+      interval: groundConfig.interval
     },
     tree_mode: container.querySelector('#tree-mode').value,
     shape_mode: container.querySelector('#shape-mode').value

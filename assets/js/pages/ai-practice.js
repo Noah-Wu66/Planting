@@ -516,14 +516,11 @@ function initSmartChatFeature(container, getCurrentQuestion) {
   }
   
   async function callPracticeAI(message, questionData, history) {
-    // 构建练习上下文的交互状态
+    // 构建练习上下文的交互状态（仅依赖参数设置）
     const interactionState = {
-      trees: [], // 练习模式下不需要树木信息
       ground: {
         length: questionData?.parameters?.length || 100,
-        interval: questionData?.parameters?.interval || 10,
-        start_x: 0,
-        start_y: 0
+        interval: questionData?.parameters?.interval || 10
       },
       tree_mode: questionData?.parameters?.mode || 'both',
       shape_mode: questionData?.parameters?.shape || 'line'
