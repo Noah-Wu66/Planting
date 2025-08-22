@@ -131,14 +131,14 @@ def calculate_tree_count(length: float, interval: float, mode: str, shape: str) 
         else:
             return int(length / interval) + 1
     elif shape == "circle":
-        # 圆形种植（环形）
+        # 圆形种植（环形），若除不尽提示由前端控制，这里返回向下取整
         return int(length / interval)
     elif shape == "triangle":
-        # 三角形种植（周长除以间距）
-        return int(length / interval)
+        # 三角形种植（周长 = 3×length）
+        return int((length * 3) / interval)
     elif shape == "square":
-        # 正方形种植（周长除以间距）
-        return int(length / interval)
+        # 正方形种植（周长 = 4×length）
+        return int((length * 4) / interval)
     else:
         # 默认按直线两端种植计算
         return int(length / interval) + 1
@@ -167,10 +167,11 @@ def generate_solving_steps(length: float, interval: float, mode: str, shape: str
         steps.append(f"计算：{length} ÷ {interval} = {int(length/interval)}棵")
     elif shape in ["triangle", "square"]:
         shape_name = "三角形" if shape == "triangle" else "正方形"
+        mul = 3 if shape == "triangle" else 4
         steps.append(f"这是一道{shape_name}种植问题")
-        steps.append(f"已知：{shape_name}周长{length}米，间距{interval}米")
+        steps.append(f"已知：{shape_name}周长{length*mul}米，间距{interval}米")
         steps.append(f"{shape_name}种植公式：棵数 = 周长 ÷ 间距")
-        steps.append(f"计算：{length} ÷ {interval} = {int(length/interval)}棵")
+        steps.append(f"计算：{length*mul} ÷ {interval} = {int((length*mul)/interval)}棵")
 
     return steps
 

@@ -147,7 +147,9 @@ export class TreeDemo {
     const centerY = 150;
     const maxPixelLength = this.demoArea.clientWidth - 100;
     const pixelLength = Math.min(maxPixelLength, this.parameters.length * 4);
-    const size = Math.min(pixelLength / 2, 100) * 0.8;
+    // 使用可用高度限制，放大形状，减少树重叠
+    const verticalLimit = (this.demoArea.clientHeight - 40) / 2;
+    const size = Math.min(pixelLength / 2, verticalLimit) * 0.9;
     
     // 清除现有图形
     const existingShapes = this.groundSvg.querySelectorAll('.ground-shape');
@@ -261,7 +263,7 @@ export class TreeDemo {
     const centerX = (this.groundConfig.startX + this.groundConfig.endX) / 2;
     const centerY = this.groundConfig.startY;
     const radius = Math.min((this.groundConfig.endX - this.groundConfig.startX) / 2, 100) * 0.8; // 与地面图形一致
-    // 闭合图形：树数 = ⌊周长/间距⌋，这里周长直接取参数 length
+    // 按数学关系计算：棵数 = 周长 ÷ 间距
     const numPoints = Math.max(3, Math.floor(this.parameters.length / this.parameters.interval));
 
     let points = [];
@@ -295,7 +297,8 @@ export class TreeDemo {
     const edgeLens = edges.map(e => Math.hypot(e.end.x - e.start.x, e.end.y - e.start.y));
     const totalPx = edgeLens.reduce((a, b) => a + b, 0);
 
-    const treeCount = Math.max(3, Math.floor(this.parameters.length / this.parameters.interval));
+    // 按数学关系计算：棵数 = 周长 ÷ 间距 = 3×length ÷ interval
+    const treeCount = Math.max(3, Math.floor((this.parameters.length * 3) / this.parameters.interval));
     if (treeCount <= 0 || totalPx <= 0) return [];
 
     const stepPx = totalPx / treeCount;
@@ -304,7 +307,7 @@ export class TreeDemo {
     for (let i = 0; i < treeCount; i++) {
       let rem = i * stepPx;
       let edgeIndex = 0;
-      while (edgeIndex < edges.length && rem > edgeLens[edgeIndex]) {
+      while (edgeIndex < edges.length - 1 && rem >= edgeLens[edgeIndex]) {
         rem -= edgeLens[edgeIndex];
         edgeIndex++;
       }
@@ -339,7 +342,8 @@ export class TreeDemo {
     const edgeLens = edges.map(e => Math.hypot(e.end.x - e.start.x, e.end.y - e.start.y));
     const totalPx = edgeLens.reduce((a, b) => a + b, 0);
 
-    const treeCount = Math.max(4, Math.floor(this.parameters.length / this.parameters.interval));
+    // 按数学关系计算：棵数 = 周长 ÷ 间距 = 4×length ÷ interval
+    const treeCount = Math.max(4, Math.floor((this.parameters.length * 4) / this.parameters.interval));
     if (treeCount <= 0 || totalPx <= 0) return [];
 
     const stepPx = totalPx / treeCount;
@@ -348,7 +352,7 @@ export class TreeDemo {
     for (let i = 0; i < treeCount; i++) {
       let rem = i * stepPx;
       let edgeIndex = 0;
-      while (edgeIndex < edges.length && rem > edgeLens[edgeIndex]) {
+      while (edgeIndex < edges.length - 1 && rem >= edgeLens[edgeIndex]) {
         rem -= edgeLens[edgeIndex];
         edgeIndex++;
       }

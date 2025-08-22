@@ -166,16 +166,69 @@ function initDemoInteraction(container) {
     trees = [];
     clearTreeElements();
 
+    // 闭合图形可行性检查：周长必须能被间距整除
+    const shapeForCheck = container.querySelector('#shape-mode').value;
+    const isClosedShape = (shapeForCheck === 'circle' || shapeForCheck === 'triangle' || shapeForCheck === 'square');
+    if (isClosedShape) {
+      const multiplier = shapeForCheck === 'circle' ? 1 : (shapeForCheck === 'triangle' ? 3 : 4);
+      const perim = groundConfig.length * multiplier;
+      const feasible = Number.isFinite(perim) && groundConfig.interval > 0 && Number.isInteger(perim / groundConfig.interval);
+      const hintEl = container.querySelector('#demo-hint');
+      if (!feasible) {
+        if (hintEl) {
+          hintEl.textContent = `⚠️ 当前参数无法等距种植（要求：${multiplier === 1 ? '周长' : '周长'}可被间距整除）。请调整长度或间距。`;
+        }
+        updateTreeDisplay();
+        return; // 不生成点
+      } else if (hintEl) {
+        hintEl.textContent = '🌳 正确的种树演示';
+      }
+    } else {
+      // 直线两端都种时，也需要长度能被间距整除
+      const modeForCheck = container.querySelector('#tree-mode').value;
+      if (modeForCheck === 'both') {
+        const feasible = groundConfig.interval > 0 && Number.isInteger(groundConfig.length / groundConfig.interval);
+        const hintEl = container.querySelector('#demo-hint');
+        if (!feasible) {
+          if (hintEl) {
+            hintEl.textContent = '⚠️ 直线两端都种时，要求路长能被间距整除。请调整参数。';
+          }
+          updateTreeDisplay();
+          return;
+        } else if (hintEl) {
+          hintEl.textContent = '🌳 正确的种树演示';
+        }
+      }
+    }
+
     // 根据参数生成正确的树木位置
     const correctPositions = calculateCorrectTreePositions();
+
+    // 根据相邻点距离动态计算树图标尺寸，避免“挤成一堆”
+    function computeIconSize(positions){
+      if (!positions || positions.length < 2) return (isMobile ? 28 : 32);
+      let minStep = Infinity;
+      for (let i = 0; i < positions.length; i++) {
+        const a = positions[i];
+        const b = positions[(i + 1) % positions.length];
+        const step = Math.hypot(a.x - b.x, a.y - b.y);
+        if (step > 0 && step < minStep) minStep = step;
+      }
+      if (!isFinite(minStep)) return (isMobile ? 28 : 32);
+      // 让图标小于相邻间距，避免重叠
+      const target = Math.min(minStep - 4, isMobile ? 28 : 36);
+      return Math.round(Math.max(10, target));
+    }
+    const iconSizePx = computeIconSize(correctPositions);
 
     // 创建树木元素
     correctPositions.forEach((pos, index) => {
       const tree = {
         id: `demo-tree-${++treeIdCounter}`,
-        x: pos.x - 18, // 调整显示位置
-        y: pos.y - 36,
-        isPlaced: true
+        x: pos.x,
+        y: pos.y,
+        isPlaced: true,
+        size: iconSizePx
       };
       trees.push(tree);
       createDemoTreeElement(tree);
@@ -225,11 +278,12 @@ function initDemoInteraction(container) {
     treeEl.className = 'demo-tree';
     treeEl.id = tree.id;
     treeEl.innerHTML = '🌳';
-    const treeSize = isMobile ? '32px' : '36px';
+    const sizePx = (tree && tree.size ? tree.size : (isMobile ? 32 : 36));
+    const treeSize = `${sizePx}px`;
     treeEl.style.cssText = `
       position: absolute;
-      left: ${tree.x}px;
-      top: ${tree.y}px;
+      left: ${tree.x - sizePx / 2}px;
+      top: ${tree.y - sizePx}px;
       font-size: ${treeSize};
       user-select: none;
       z-index: 10;
@@ -288,7 +342,9 @@ function initDemoInteraction(container) {
 
     const centerX = (groundConfig.startX + groundConfig.endX) / 2;
     const centerY = groundConfig.startY;
-    const size = Math.min((groundConfig.endX - groundConfig.startX) / 2, 100) * 0.8;
+    // 使图形尽量占满可用高度，同时与水平长度保持一致比例
+    const verticalLimit = (dragArea.clientHeight - 40) / 2; // 距离上下边各留 20px
+    const size = Math.min((groundConfig.endX - groundConfig.startX) / 2, verticalLimit) * 0.9;
 
     switch (groundConfig.shape) {
       case 'line':
@@ -357,6 +413,23 @@ function initDemoInteraction(container) {
 
     const mode = container.querySelector('#tree-mode').value;
     const shape = groundConfig.shape;
+
+    // 闭合图形整除性检查，不满足则不显示吸附点
+    const isClosedShape = (shape === 'circle' || shape === 'triangle' || shape === 'square');
+    if (isClosedShape) {
+      const multiplier = shape === 'circle' ? 1 : (shape === 'triangle' ? 3 : 4);
+      const perim = groundConfig.length * multiplier;
+      const feasible = Number.isFinite(perim) && groundConfig.interval > 0 && Number.isInteger(perim / groundConfig.interval);
+      if (!feasible) {
+        return [];
+      }
+    } else {
+      const modeForCheck = container.querySelector('#tree-mode').value;
+      if (modeForCheck === 'both') {
+        const feasible = groundConfig.interval > 0 && Number.isInteger(groundConfig.length / groundConfig.interval);
+        if (!feasible) return [];
+      }
+    }
 
     let points = [];
 
@@ -489,7 +562,7 @@ function initDemoInteraction(container) {
     for (let i = 0; i < treeCount; i++) {
       let rem = i * stepPx;
       let edgeIndex = 0;
-      while (edgeIndex < edges.length && rem > edgeLens[edgeIndex]) {
+      while (edgeIndex < edges.length - 1 && rem >= edgeLens[edgeIndex]) {
         rem -= edgeLens[edgeIndex];
         edgeIndex++;
       }
