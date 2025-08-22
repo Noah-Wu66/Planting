@@ -509,6 +509,66 @@ async def evaluate_practice_session(request: EvaluationRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"评估生成错误: {str(e)}")
 
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat_with_ai(request: ChatRequest):
+    """AI学习模式的对话，具备上下文感知"""
+    try:
+        # 生成学习模式的系统提示
+        system_prompt = generate_system_prompt(request.interaction_state)
+        
+        # 构建对话内容
+        contents = [
+            types.Content(
+                role="user",
+                parts=[types.Part.from_text(text=system_prompt)]
+            )
+        ]
+        
+        # 如果不是新对话，添加历史记录
+        if not request.is_new_conversation and request.chat_history:
+            for msg in request.chat_history:
+                contents.append(
+                    types.Content(
+                        role=msg.role,
+                        parts=[types.Part.from_text(text=msg.content)]
+                    )
+                )
+        
+        # 添加当前用户消息
+        contents.append(
+            types.Content(
+                role="user",
+                parts=[types.Part.from_text(text=request.message)]
+            )
+        )
+        
+        # 调用Gemini API
+        generate_content_config = types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(
+                thinking_budget=16000,
+            ),
+            response_mime_type="text/plain",
+        )
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=contents,
+            config=generate_content_config
+        )
+        
+        # 更新对话历史
+        updated_history = request.chat_history.copy() if not request.is_new_conversation else []
+        updated_history.append(ChatMessage(role="user", content=request.message))
+        updated_history.append(ChatMessage(role="assistant", content=response.text))
+        
+        return ChatResponse(
+            response=response.text,
+            updated_history=updated_history
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI服务错误: {str(e)}")
+
 @app.post("/api/practice/chat", response_model=ChatResponse)
 async def practice_chat_with_ai(request: ChatRequest):
     """练习模式下的AI对话，具备上下文感知"""
