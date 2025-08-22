@@ -616,13 +616,15 @@ async def chat_with_ai(request: ChatRequest):
         # 如果不是新对话，添加历史记录
         if not request.is_new_conversation and request.chat_history:
             for msg in request.chat_history:
+                # 将前端历史中的 'assistant' 角色映射为 Gemini 所需的 'model'
+                mapped_role = "model" if msg.role == "assistant" else "user"
                 contents.append(
                     types.Content(
-                        role=msg.role,
+                        role=mapped_role,
                         parts=[types.Part.from_text(text=msg.content)]
                     )
                 )
-        
+
         # 添加当前用户消息
         contents.append(
             types.Content(
@@ -685,9 +687,11 @@ async def practice_chat_with_ai(request: ChatRequest):
         # 如果不是新对话，添加历史记录
         if not request.is_new_conversation and request.chat_history:
             for msg in request.chat_history:
+                # 将前端历史中的 'assistant' 角色映射为 Gemini 所需的 'model'
+                mapped_role = "model" if msg.role == "assistant" else "user"
                 contents.append(
                     types.Content(
-                        role=msg.role,
+                        role=mapped_role,
                         parts=[types.Part.from_text(text=msg.content)]
                     )
                 )
