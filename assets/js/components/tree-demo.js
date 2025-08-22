@@ -144,7 +144,6 @@ export class TreeDemo {
     // 使用可用高度限制，放大形状，减少树重叠
     const verticalLimit = (this.demoArea.clientHeight - 40) / 2;
     const size = Math.min(pixelLength / 2, verticalLimit) * 0.9;
-    this.groundConfig.shapeSize = size; // 统一供点生成使用
     
     // 清除现有图形
     const existingShapes = this.groundSvg.querySelectorAll('.ground-shape');
@@ -156,7 +155,8 @@ export class TreeDemo {
       startX: centerX - pixelLength / 2,
       endX: centerX + pixelLength / 2,
       startY: centerY,
-      shape: this.parameters.shape
+      shape: this.parameters.shape,
+      shapeSize: size
     };
     
     switch (this.parameters.shape) {
