@@ -11,6 +11,9 @@ from google import genai
 from google.genai import types
 import json
 import time
+import logging
+import traceback
+
 
 # 过滤 Pydantic 关于 any 函数的警告
 warnings.filterwarnings("ignore", message=".*is not a Python type.*", category=UserWarning)
@@ -140,11 +143,11 @@ def calculate_tree_count(length: float, interval: float, mode: str, shape: str) 
 def generate_solving_steps(length: float, interval: float, mode: str, shape: str) -> List[str]:
     """生成解题步骤"""
     steps = []
-    
+
     if shape == "line":
         steps.append(f"这是一道直线种植问题")
         steps.append(f"已知：路长{length}米，间距{interval}米")
-        
+
         if mode == "both":
             steps.append(f"两端都种树的公式：棵数 = 路长 ÷ 间距 + 1")
             steps.append(f"计算：{length} ÷ {interval} + 1 = {int(length/interval)} + 1 = {int(length/interval) + 1}棵")
@@ -165,7 +168,7 @@ def generate_solving_steps(length: float, interval: float, mode: str, shape: str
         steps.append(f"已知：{shape_name}周长{length}米，间距{interval}米")
         steps.append(f"{shape_name}种植公式：棵数 = 周长 ÷ 间距")
         steps.append(f"计算：{length} ÷ {interval} = {int(length/interval)}棵")
-    
+
     return steps
 
 def generate_system_prompt(interaction_state: InteractionState) -> str:
@@ -257,10 +260,10 @@ def generate_system_prompt(interaction_state: InteractionState) -> str:
 def generate_diverse_parameters(question_type: str, question_number: int) -> dict:
     """根据题目类型生成多样化参数"""
     import random
-    
+
     # 设置随机种子确保同一题目编号生成相同参数
     random.seed(question_number * 42)
-    
+
     if question_type == "basic_line":
         # 基础直线题目：简单参数
         lengths = [60, 80, 100, 120]
@@ -271,7 +274,7 @@ def generate_diverse_parameters(question_type: str, question_number: int) -> dic
             "mode": "both",
             "shape": "line"
         }
-    
+
     elif question_type == "basic_line_both":
         # 两端都种的直线问题
         lengths = [80, 100, 120, 140]
@@ -282,7 +285,7 @@ def generate_diverse_parameters(question_type: str, question_number: int) -> dic
             "mode": "both",
             "shape": "line"
         }
-    
+
     elif question_type == "line_advanced":
         # 进阶直线问题
         lengths = [90, 110, 130, 150]
@@ -294,7 +297,7 @@ def generate_diverse_parameters(question_type: str, question_number: int) -> dic
             "mode": random.choice(modes),
             "shape": "line"
         }
-    
+
     elif question_type == "shape_problem":
         # 图形种植问题
         lengths = [24, 30, 36, 42]  # 便于计算周长的数值
@@ -306,28 +309,28 @@ def generate_diverse_parameters(question_type: str, question_number: int) -> dic
             "mode": "circle",  # 图形种植通常是环形
             "shape": random.choice(shapes)
         }
-    
+
     elif question_type == "comprehensive":
         # 综合应用问题
         lengths = [120, 140, 160, 180]
         intervals = [8, 10, 12, 15]
         all_modes = ["both", "none", "one", "circle"]
         all_shapes = ["line", "circle", "triangle", "square"]
-        
+
         # 确保模式和图形的合理搭配
         shape = random.choice(all_shapes)
         if shape == "line":
             mode = random.choice(["both", "none", "one"])
         else:
             mode = "circle"  # 非直线图形使用环形模式
-            
+
         return {
             "length": random.choice(lengths),
             "interval": random.choice(intervals),
             "mode": mode,
             "shape": shape
         }
-    
+
     # 默认情况
     return {"length": 100, "interval": 10, "mode": "both", "shape": "line"}
 
@@ -335,7 +338,7 @@ def get_mode_description(mode: str) -> str:
     """获取种植模式的中文描述"""
     descriptions = {
         "both": "两端都种树",
-        "none": "两端都不种树", 
+        "none": "两端都不种树",
         "one": "一端种树，一端不种",
         "circle": "环形种植"
     }
@@ -358,17 +361,17 @@ async def generate_practice_question(request: QuestionRequest):
         # 根据题目编号和难度生成题目类型策略
         question_strategies = {
             1: {"type": "basic_line", "difficulty": "basic"},
-            2: {"type": "basic_line_both", "difficulty": "basic"},  
+            2: {"type": "basic_line_both", "difficulty": "basic"},
             3: {"type": "line_advanced", "difficulty": "medium"},
             4: {"type": "shape_problem", "difficulty": "medium"},
             5: {"type": "comprehensive", "difficulty": "advanced"}
         }
-        
+
         strategy = question_strategies.get(request.question_number, question_strategies[1])
-        
+
         # 生成多样化参数
         params = generate_diverse_parameters(strategy["type"], request.question_number)
-        
+
         # 构建更详细的 AI 提示词
         prompt = f"""你是一个专门为小学五年级学生设计植树问题的AI助手。
 
@@ -378,7 +381,7 @@ async def generate_practice_question(request: QuestionRequest):
 **难度要求**: {strategy["difficulty"]}
 **参数配置**:
 - 长度: {params['length']}米
-- 间距: {params['interval']}米  
+- 间距: {params['interval']}米
 - 种植模式: {get_mode_description(params['mode'])}
 - 图形模式: {get_shape_description(params['shape'])}
 
@@ -398,7 +401,7 @@ async def generate_practice_question(request: QuestionRequest):
 
 请生成一道符合要求的练习题，只返回题目描述文字，不要包含答案。
 例如："小明家门前有一条120米长的小路，准备在路的两边种植银杏树..."""
-        
+
         # 调用 Gemini API
         contents = [
             types.Content(
@@ -406,7 +409,7 @@ async def generate_practice_question(request: QuestionRequest):
                 parts=[types.Part.from_text(text=prompt)]
             )
         ]
-        
+
         generate_content_config = types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(
                 thinking_budget=16000,  # 恢复为16000
@@ -419,18 +422,18 @@ async def generate_practice_question(request: QuestionRequest):
             contents=contents,
             config=generate_content_config
         )
-        
+
         # 解析 AI 生成的题目
         question_text = response.text.strip()
-        
+
         # 可选：打印Token使用情况用于调试
         if hasattr(response, 'usage_metadata') and response.usage_metadata:
             print(f"题目生成 - 输入Token: {response.usage_metadata.prompt_token_count}, "
                   f"输出Token: {response.usage_metadata.candidates_token_count}")
-        
+
         # 计算正确答案
         expected_answer = calculate_tree_count(params["length"], params["interval"], params["mode"], params["shape"])
-        
+
         return QuestionResponse(
             question_id=f"q{request.question_number}_{int(time.time())}",
             question_text=question_text,
@@ -438,7 +441,7 @@ async def generate_practice_question(request: QuestionRequest):
             expected_answer=expected_answer,
             difficulty=strategy["difficulty"]
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"题目生成错误: {str(e)}")
 
@@ -453,9 +456,9 @@ async def check_practice_answer(request: AnswerRequest):
             request.parameters["mode"],
             request.parameters["shape"]
         )
-        
+
         is_correct = request.user_answer == correct_answer
-        
+
         # 构建 AI 提示词
         prompt = f"""你是一个植树问题的批改助手。
 
@@ -475,7 +478,7 @@ async def check_practice_answer(request: AnswerRequest):
 4. 鼓励性的反馈
 
 回答要温和、具体，适合五年级学生理解。只返回简洁的解释文字。"""
-        
+
         # 调用 Gemini API
         contents = [
             types.Content(
@@ -483,27 +486,27 @@ async def check_practice_answer(request: AnswerRequest):
                 parts=[types.Part.from_text(text=prompt)]
             )
         ]
-        
+
         generate_content_config = types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(
                 thinking_budget=16000,  # 恢复为16000
             ),
             response_mime_type="text/plain"
         )
-        
+
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=contents,
             config=generate_content_config
         )
-        
+
         explanation = response.text.strip()
-        
+
         # 可选：打印Token使用情况用于调试
         if hasattr(response, 'usage_metadata') and response.usage_metadata:
             print(f"答案检查 - 输入Token: {response.usage_metadata.prompt_token_count}, "
                   f"输出Token: {response.usage_metadata.candidates_token_count}")
-        
+
         # 生成解题步骤
         solving_steps = generate_solving_steps(
             request.parameters["length"],
@@ -511,14 +514,14 @@ async def check_practice_answer(request: AnswerRequest):
             request.parameters["mode"],
             request.parameters["shape"]
         )
-        
+
         return AnswerResponse(
             is_correct=is_correct,
             correct_answer=correct_answer,
             explanation=explanation,
             solving_steps=solving_steps
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"答案检查错误: {str(e)}")
 
@@ -529,7 +532,7 @@ async def evaluate_practice_session(request: EvaluationRequest):
         session = request.practice_session
         correct_count = sum(1 for answer in session.answers if answer.get("is_correct", False))
         total_questions = len(session.answers)
-        
+
         # 构建 AI 提示词
         prompt = f"""你是一个小学数学老师，请为五年级学生的植树问题练习进行评估。
 
@@ -547,7 +550,7 @@ async def evaluate_practice_session(request: EvaluationRequest):
 - 建议要具体可行
 
 只返回建议列表，每条建议一行。"""
-        
+
         # 调用 Gemini API
         contents = [
             types.Content(
@@ -555,46 +558,46 @@ async def evaluate_practice_session(request: EvaluationRequest):
                 parts=[types.Part.from_text(text=prompt)]
             )
         ]
-        
+
         generate_content_config = types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(
                 thinking_budget=16000,  # 恢复为16000
             ),
             response_mime_type="text/plain"
         )
-        
+
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=contents,
             config=generate_content_config
         )
-        
+
         suggestions = [line.strip() for line in response.text.strip().split('\n') if line.strip()]
-        
+
         # 可选：打印Token使用情况用于调试
         if hasattr(response, 'usage_metadata') and response.usage_metadata:
             print(f"评估生成 - 输入Token: {response.usage_metadata.prompt_token_count}, "
                   f"输出Token: {response.usage_metadata.candidates_token_count}")
-        
+
         # 判断表现等级
         performance = "需要加强"
         if correct_count >= total_questions * 0.8:
             performance = "优秀"
         elif correct_count >= total_questions * 0.6:
             performance = "良好"
-        
+
         # 格式化时间
         minutes = session.total_time // 60
         seconds = session.total_time % 60
         time_text = f"{minutes}分{seconds}秒" if minutes > 0 else f"{seconds}秒"
-        
+
         return EvaluationResponse(
             correct_rate=f"{correct_count}/{total_questions}",
             total_time_text=time_text,
             performance=performance,
             suggestions=suggestions
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"评估生成错误: {str(e)}")
 
@@ -604,7 +607,7 @@ async def chat_with_ai(request: ChatRequest):
     try:
         # 生成学习模式的系统提示
         system_prompt = generate_system_prompt(request.interaction_state)
-        
+
         # 构建对话内容
         contents = [
             types.Content(
@@ -612,7 +615,7 @@ async def chat_with_ai(request: ChatRequest):
                 parts=[types.Part.from_text(text=system_prompt)]
             )
         ]
-        
+
         # 如果不是新对话，添加历史记录
         if not request.is_new_conversation and request.chat_history:
             for msg in request.chat_history:
@@ -632,7 +635,7 @@ async def chat_with_ai(request: ChatRequest):
                 parts=[types.Part.from_text(text=request.message)]
             )
         )
-        
+
         # 调用Gemini API
         generate_content_config = types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(
@@ -641,12 +644,19 @@ async def chat_with_ai(request: ChatRequest):
             response_mime_type="text/plain",
         )
 
+        # 记录关键调用参数，便于排查
+        try:
+            logging.info("/api/chat 调用前: model=%s, contents_count=%d, roles=%s",
+                         "gemini-2.5-flash", len(contents), [c.role for c in contents])
+        except Exception:
+            pass
+
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=contents,
             config=generate_content_config
         )
-        
+
         # 可选：检查缓存命中情况和Token使用
         if hasattr(response, 'usage_metadata') and response.usage_metadata:
             usage = response.usage_metadata
@@ -655,18 +665,21 @@ async def chat_with_ai(request: ChatRequest):
                 cache_info = f"，缓存Token: {usage.cached_content_token_count}"
             print(f"AI学习对话 - 输入Token: {usage.prompt_token_count}, "
                   f"输出Token: {usage.candidates_token_count}{cache_info}")
-        
+
         # 更新对话历史
         updated_history = request.chat_history.copy() if not request.is_new_conversation else []
         updated_history.append(ChatMessage(role="user", content=request.message))
         updated_history.append(ChatMessage(role="assistant", content=response.text))
-        
+
         return ChatResponse(
             response=response.text,
             updated_history=updated_history
         )
-        
+
     except Exception as e:
+        # 打印完整堆栈，便于在 Zeabur 日志中定位
+        logging.error("/api/chat 调用 Gemini 出错: %s", str(e))
+        logging.error("%s", traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"AI服务错误: {str(e)}")
 
 @app.post("/api/practice/chat", response_model=ChatResponse)
@@ -675,7 +688,7 @@ async def practice_chat_with_ai(request: ChatRequest):
     try:
         # 生成练习模式的系统提示
         system_prompt = generate_practice_system_prompt(request.interaction_state)
-        
+
         # 构建对话内容
         contents = [
             types.Content(
@@ -683,7 +696,7 @@ async def practice_chat_with_ai(request: ChatRequest):
                 parts=[types.Part.from_text(text=system_prompt)]
             )
         ]
-        
+
         # 如果不是新对话，添加历史记录
         if not request.is_new_conversation and request.chat_history:
             for msg in request.chat_history:
@@ -695,7 +708,7 @@ async def practice_chat_with_ai(request: ChatRequest):
                         parts=[types.Part.from_text(text=msg.content)]
                     )
                 )
-        
+
         # 添加当前用户消息
         contents.append(
             types.Content(
@@ -703,7 +716,7 @@ async def practice_chat_with_ai(request: ChatRequest):
                 parts=[types.Part.from_text(text=request.message)]
             )
         )
-        
+
         # 调用Gemini API
         generate_content_config = types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(
@@ -712,12 +725,19 @@ async def practice_chat_with_ai(request: ChatRequest):
             response_mime_type="text/plain",
         )
 
+        # 记录关键调用参数，便于排查
+        try:
+            logging.info("/api/practice/chat 调用前: model=%s, contents_count=%d, roles=%s",
+                         "gemini-2.5-flash", len(contents), [c.role for c in contents])
+        except Exception:
+            pass
+
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=contents,
             config=generate_content_config
         )
-        
+
         # 可选：检查缓存命中情况和Token使用
         if hasattr(response, 'usage_metadata') and response.usage_metadata:
             usage = response.usage_metadata
@@ -726,18 +746,21 @@ async def practice_chat_with_ai(request: ChatRequest):
                 cache_info = f"，缓存Token: {usage.cached_content_token_count}"
             print(f"练习对话 - 输入Token: {usage.prompt_token_count}, "
                   f"输出Token: {usage.candidates_token_count}{cache_info}")
-        
+
         # 更新对话历史
         updated_history = request.chat_history.copy() if not request.is_new_conversation else []
         updated_history.append(ChatMessage(role="user", content=request.message))
         updated_history.append(ChatMessage(role="assistant", content=response.text))
-        
+
         return ChatResponse(
             response=response.text,
             updated_history=updated_history
         )
-        
+
     except Exception as e:
+        # 打印完整堆栈，便于在 Zeabur 日志中定位
+        logging.error("/api/practice/chat 调用 Gemini 出错: %s", str(e))
+        logging.error("%s", traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"AI服务错误: {str(e)}")
 
 def generate_practice_system_prompt(interaction_state: InteractionState) -> str:
@@ -745,7 +768,7 @@ def generate_practice_system_prompt(interaction_state: InteractionState) -> str:
     ground = interaction_state.ground
     mode = interaction_state.tree_mode
     shape_mode = getattr(interaction_state, 'shape_mode', 'line')
-    
+
     # 分析种树模式
     mode_descriptions = {
         'both': '两端都种树',
@@ -753,7 +776,7 @@ def generate_practice_system_prompt(interaction_state: InteractionState) -> str:
         'one': '一端种，一端不种',
         'circle': '环形（圆形）种树'
     }
-    
+
     # 分析图形模式
     shape_descriptions = {
         'line': '直线种植',
@@ -761,7 +784,7 @@ def generate_practice_system_prompt(interaction_state: InteractionState) -> str:
         'triangle': '三角形种植',
         'square': '正方形种植'
     }
-    
+
     prompt = f"""你是一个专门教授小学五年级植树问题的AI练习助手。
 
 **重要限制**：

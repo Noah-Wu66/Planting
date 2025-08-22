@@ -31,7 +31,14 @@ export class APIClient {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        let detail = '';
+        try {
+          const err = await response.json();
+          detail = err && err.detail ? err.detail : JSON.stringify(err);
+        } catch (e) {
+          try { detail = await response.text(); } catch {}
+        }
+        throw new Error(`HTTP ${response.status}: ${detail || response.statusText}`);
       }
 
       return await response.json();
