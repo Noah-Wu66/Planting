@@ -206,15 +206,24 @@ export class TreeDemo {
         points.push({ x, y });
       }
     } else {
-      // 直线模式
+      // 直线模式（道路两旁）：两侧各一行
+      const yBase = this.groundConfig.startY;
+      const sideOffset = Math.min(36, this.demoArea.clientHeight / 6);
+      const yTop = yBase - sideOffset;
+      const yBottom = yBase + sideOffset;
+
       for (let i = 0; i <= numIntervals; i++) {
         const x = this.groundConfig.startX + i * pixelInterval;
-        const y = this.groundConfig.startY;
 
-        if (mode === 'both' ||
-           (mode === 'none' && i > 0 && i < numIntervals) ||
-           (mode === 'one' && i < numIntervals)) {
-          points.push({ x, y });
+        const shouldPlace = (
+          mode === 'both' ||
+          (mode === 'none' && i > 0 && i < numIntervals) ||
+          (mode === 'one' && i < numIntervals)
+        );
+
+        if (shouldPlace) {
+          points.push({ x, y: yTop });
+          points.push({ x, y: yBottom });
         }
       }
     }

@@ -204,13 +204,13 @@ function initPracticeFeature(container) {
         return `在一个周长为${len}米的圆形花坛边缘，每隔${itv}米种一棵树。请问需要多少棵树？`;
       }
       if (m === 'both') {
-        return `在一条长为${len}米的道路两边，每隔${itv}米种一棵树，两端都要种树。请问一共需要多少棵树？`;
+        return `在一条长为${len}米的道路两旁，每隔${itv}米种一棵树，两端都要种树。请问一共需要多少棵树？`;
       }
       if (m === 'none') {
-        return `在一条长为${len}米的道路两边，每隔${itv}米种一棵树，两端都不种树。请问一共需要多少棵树？`;
+        return `在一条长为${len}米的道路两旁，每隔${itv}米种一棵树，两端都不种树。请问一共需要多少棵树？`;
       }
       // one
-      return `在一条长为${len}米的道路两边，每隔${itv}米种一棵树，一端种一端不种。请问一共需要多少棵树？`;
+      return `在一条长为${len}米的道路两旁，每隔${itv}米种一棵树，一端种一端不种。请问一共需要多少棵树？`;
     }
 
     const n = Math.floor(length / interval);
