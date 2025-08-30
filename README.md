@@ -27,48 +27,47 @@
 - **前端**: 纯JavaScript，无框架依赖，轻量级实现
 - **SVG绘图**: 精确的图形渲染和交互
 - **拖拽API**: 原生HTML5拖拽功能
-- **后端**: FastAPI + Python，高性能Web框架
+- **后端**: Next.js App Router（Node.js 22）
 - **AI集成**: Gemini 2.5 Flash模型
-- **静态文件服务**: FastAPI内置静态文件服务
+- **静态资源**: 由 Next.js `public/` 提供
 - **单服务部署**: 前后端合并，适合Zeabur等平台
 
 ## 快速开始
 
 ### 1. 环境准备
 
-确保已安装Python 3.8+和pip。
+确保 Node.js 22。
 
 ### 2. 本地开发
 
 ```bash
-# 进入API目录
-cd api
-
 # 安装依赖
-pip install -r requirements.txt
+npm ci # 或 npm install
 
-# 配置环境变量
-cp .env.example .env
-# 编辑 .env 文件，设置你的 GEMINI_API_KEY
+# 启动开发
+npm run dev
 
-# 启动服务（前后端合并）
-python main.py
+# 构建
+npm run build
+
+# 生产启动
+npm start
 ```
 
-服务将在 `http://localhost:8080` 启动，包含前端界面和API。
+服务将由 Next.js 提供，前端脚本通过 `app/page.js` 注入运行。
 
 ### 3. 获取Gemini API密钥
 
 1. 访问 [AiHubMix](https://aihubmix.com)
 2. 注册账号并获取API密钥
-3. 将密钥配置到 `api/.env` 文件中
+3. 将密钥配置到托管平台环境变量中（如 `GEMINI_API_KEY`）
 
 ### 4. Zeabur部署
 
 1. 将代码推送到GitHub仓库
 2. 在Zeabur中连接GitHub仓库
 3. 设置环境变量 `GEMINI_API_KEY`
-4. Zeabur会自动检测Dockerfile并部署
+4. Zeabur 选择 Node/Next.js 方案并部署（详见 ZEABUR_DEPLOY.md）
 
 ## 使用指南
 
@@ -122,24 +121,10 @@ python main.py
 
 ## 部署说明
 
-### 本地开发
-- 单一服务: FastAPI提供前后端服务 (端口8080)
-- 静态文件: 通过FastAPI StaticFiles中间件提供
-
 ### Zeabur部署
-- 自动检测: Zeabur自动识别Dockerfile
-- 环境变量: 在Zeabur控制台设置GEMINI_API_KEY
+- 环境变量: 在Zeabur控制台设置 GEMINI_API_KEY（可选 GEMINI_BASE_URL）
 - 域名绑定: 支持自定义域名
 - 自动HTTPS: Zeabur提供免费SSL证书
-
-### Docker部署
-```bash
-# 构建镜像
-docker build -t planting-app .
-
-# 运行容器
-docker run -p 8080:8080 -e GEMINI_API_KEY=your-key planting-app
-```
 
 ## 贡献指南
 

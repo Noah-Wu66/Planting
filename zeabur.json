@@ -1,13 +1,13 @@
 {
   "name": "植树问题AI学习平台",
   "description": "面向小学五年级的植树问题AI学习平台，集成拖拽交互和智能辅导功能",
-  "type": "python",
-  "framework": "fastapi",
-  "buildCommand": "pip install -r api/requirements.txt",
-  "startCommand": "uvicorn main:app --host 0.0.0.0 --port 8080",
+  "type": "node",
+  "framework": "nextjs",
+  "buildCommand": "npm ci || npm install && npm run build",
+  "startCommand": "npm start",
   "environment": {
     "GEMINI_API_KEY": "${GEMINI_API_KEY}",
-    "PYTHONPATH": "/app"
+    "GEMINI_BASE_URL": "${GEMINI_BASE_URL}"
   },
   "regions": ["ap-east-1"],
   "plan": "free"

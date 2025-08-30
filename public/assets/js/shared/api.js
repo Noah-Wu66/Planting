@@ -21,7 +21,6 @@ export class APIClient {
       ...options
     };
 
-    // 添加超时控制
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
     config.signal = controller.signal;
@@ -44,15 +43,12 @@ export class APIClient {
       return await response.json();
     } catch (error) {
       clearTimeout(timeoutId);
-      
       if (error.name === 'AbortError') {
         throw new Error('请求超时，请检查网络连接');
       }
-      
       if (error.message.includes('Failed to fetch')) {
         throw new Error('无法连接到服务器，请确保后端服务已启动');
       }
-      
       throw error;
     }
   }
@@ -82,10 +78,8 @@ export class APIClient {
   }
 }
 
-// 创建默认API客户端实例
 export const apiClient = new APIClient();
 
-// AI聊天API
 export async function chatWithAI(message, interactionState, chatHistory = [], isNewConversation = false) {
   return apiClient.post('/api/chat', {
     message,
@@ -95,7 +89,8 @@ export async function chatWithAI(message, interactionState, chatHistory = [], is
   });
 }
 
-// 健康检查API
 export async function healthCheck() {
   return apiClient.get('/api/health');
 }
+
+
